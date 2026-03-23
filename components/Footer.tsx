@@ -1,5 +1,6 @@
 import React from 'react';
 import { SOCIAL_LINKS, CORE_COLOR, LOGO_URL } from '../constants';
+import { Link } from 'react-router-dom';
 import { Icons } from './Icons';
 
 const Footer: React.FC = () => {
@@ -32,10 +33,12 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-lg font-semibold mb-4 text-gray-200">Enlaces Rápidos</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="#/" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Inicio</a></li>
-              <li><a href="#/nosotros" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Quiénes Somos</a></li>
-              <li><a href="#/noticias" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Noticias y Artículos</a></li>
-              <li><a href="#/eventos" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Calendario de Eventos</a></li>
+              <li><Link to="/" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Inicio</Link></li>
+              <li><Link to="/nosotros" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Nosotros</Link></li>
+              <li><Link to="/noticias" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Noticias</Link></li>
+              <li><Link to="/eventos" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Eventos</Link></li>
+              <li><Link to="/blogs" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Blog</Link></li>
+              <li><Link to="/contacto" className="hover:text-green-400 transition-colors flex items-center gap-2"><Icons.ChevronRight className="w-3 h-3"/> Contacto</Link></li>
             </ul>
           </div>
 

@@ -16,6 +16,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, featured = false }) => {
         <img 
           src={article.coverImage} 
           alt={article.title} 
+          style={{ maxHeight: 500 }}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
         />
         <div className="absolute top-4 left-4">

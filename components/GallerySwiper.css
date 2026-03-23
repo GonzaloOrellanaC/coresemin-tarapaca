@@ -1,0 +1,137 @@
+.gs-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.85);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:10000;
+}
+.gs-container{
+  display:flex;
+  width:90%;
+  /* use full available viewport height minus appbar */
+  height:calc(100vh - 64px);
+  max-width:1400px;
+  max-height:none;
+}
+.gs-main{
+  flex:1 1 auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0; /* allow image to shrink inside flex */
+}
+.gs-main-swiper, .gs-main-img{
+  width:100%;
+  height:100%;
+}
+.gs-main-img{
+  object-fit:contain;
+  max-width:100%;
+  max-height:100%;
+  border-radius:6px;
+}
+
+/* Prevent text selection and dragging inside gallery */
+.gs-container, .gs-container * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+.gs-container img { -webkit-user-drag: none; user-drag: none; }
+
+/* Custom Swiper navigation buttons to match app style */
+.gs-main .swiper-button-prev,
+.gs-main .swiper-button-next{
+  width:48px;
+  height:48px;
+  border-radius:999px;
+  background:rgba(0,0,0,0.48) !important;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff !important;
+  top:50% !important;
+  transform:translateY(-50%) !important;
+  box-shadow:0 6px 18px rgba(0,0,0,0.6);
+  transition:transform .18s ease, background .18s ease, opacity .12s ease;
+  z-index:1200;
+}
+.gs-main .swiper-button-prev{ left:12px !important }
+.gs-main .swiper-button-next{ right:12px !important }
+.gs-main .swiper-button-prev:hover,
+.gs-main .swiper-button-next:hover{
+  transform:translateY(-50%) scale(1.05);
+  background: rgba(16,185,129,0.98) !important; /* green accent */
+}
+
+/* Make the arrow glyphs visible and larger */
+.gs-main .swiper-button-prev::after,
+.gs-main .swiper-button-next::after{
+  font-size:20px !important;
+  color:#fff !important;
+  opacity:1 !important;
+  text-shadow:0 1px 2px rgba(0,0,0,0.6);
+}
+
+/* Hide default blue focus ring and set accessible focus style */
+.gs-main .swiper-button-prev:focus,
+.gs-main .swiper-button-next:focus{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(16,185,129,0.18);
+}
+.gs-thumbs{
+  width:140px;
+  margin-left:16px;
+  display:flex;
+  align-items:flex-start;
+  height:100%;
+  box-sizing:border-box;
+}
+.gs-thumbs-swiper{
+  width:100%;
+  height:17vh;
+}
+.gs-thumbs-swiper .swiper-wrapper{
+  height:100%;
+}
+.gs-thumbs-swiper .swiper-slide{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-sizing:border-box;
+}
+.gs-thumb-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  cursor:pointer;
+  opacity:0.95;
+  border-radius:4px;
+}
+.gs-thumb-active .gs-thumb-img{
+  outline:3px solid rgba(255,255,255,0.9);
+  opacity:1;
+}
+.gs-close{
+  position:fixed;
+  top:18px;
+  right:22px;
+  background:transparent;
+  border:0;
+  color:#fff;
+  font-size:34px;
+  line-height:1;
+  cursor:pointer;
+}
+
+/* Responsive tweaks: on very narrow screens make thumbs shorter and slightly overlapping */
+@media (max-width:700px){
+  .gs-container{ flex-direction:column; }
+  .gs-thumbs{ width:100%; margin-left:0; margin-top:12px; height:96px; }
+  .gs-thumbs-swiper{ height:100%; }
+  .gs-thumbs-swiper .swiper-wrapper{ flex-direction:row; }
+  .gs-thumb-img{ height:64px; width:auto }
+}

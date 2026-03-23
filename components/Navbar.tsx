@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Icons } from './Icons';
-import { CORE_COLOR, LOGO_URL } from '../constants';
+import { CORE_COLOR, LOGO_URL, SOCIAL_LINKS } from '../constants';
 
 const Navbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,7 +12,7 @@ const Navbar: React.FC = () => {
     { name: 'Nosotros', path: '/nosotros' },
     { name: 'Noticias', path: '/noticias' },
     { name: 'Eventos', path: '/eventos' },
-    { name: 'Blogs', path: '/blogs' },
+    { name: 'Blog', path: '/blogs' },
     { name: 'Contacto', path: '/contacto' },
   ];
 
@@ -40,28 +40,41 @@ const Navbar: React.FC = () => {
             </Link>
           </div>
           
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive(link.path) 
-                    ? `text-[${CORE_COLOR}] bg-green-50` 
-                    : 'text-gray-600 hover:text-green-700 hover:bg-green-50'
-                }`}
-                style={{ color: isActive(link.path) ? CORE_COLOR : undefined }}
-              >
-                {link.name}
-              </Link>
-            ))}
-            <Link 
-              to="/admin" 
-              className="px-4 py-2 rounded-full text-white text-sm font-medium transition transform hover:scale-105 shadow-sm"
-              style={{ backgroundColor: CORE_COLOR }}
-            >
-              Admin
-            </Link>
+          <div className="hidden md:flex items-center">
+            <ul className="flex items-center space-x-4">
+              {navLinks.map((link) => (
+                <li key={link.path}>
+                  <Link
+                    to={link.path}
+                    aria-current={isActive(link.path) ? 'page' : undefined}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                      isActive(link.path)
+                        ? `text-[${CORE_COLOR}] bg-green-50`
+                        : 'text-gray-600 hover:text-green-700 hover:bg-green-50'
+                    }`}
+                    style={{ color: isActive(link.path) ? CORE_COLOR : undefined }}
+                  >
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <ul>
+            <div className="flex items-center gap-3 ml-4">
+              <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+                <Icons.Facebook className="w-5 h-5" />
+              </a>
+              <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+                <Icons.Twitter className="w-5 h-5" />
+              </a>
+              <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+                <Icons.Instagram className="w-5 h-5" />
+              </a>
+              <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+                <Icons.Linkedin className="w-5 h-5" />
+              </a>
+            </div>
+            </ul>
           </div>
 
           <div className="flex items-center md:hidden">
@@ -76,34 +89,44 @@ const Navbar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile menu */}
-      {isOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100">
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                onClick={() => setIsOpen(false)}
-                className={`block px-3 py-2 rounded-md text-base font-medium ${
-                  isActive(link.path)
-                    ? 'bg-green-50 text-green-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
-                }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-             <Link
-                to="/admin"
-                onClick={() => setIsOpen(false)}
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-800"
-              >
-                Administrador
-              </Link>
+      {/* Mobile menu with translation transition (0.5s) */}
+      <div
+        className={`md:hidden bg-white border-t border-gray-100 transform transition-all duration-500 ease-out overflow-hidden ${
+          isOpen ? 'translate-y-0 opacity-100 max-h-screen pointer-events-auto' : '-translate-y-4 opacity-0 max-h-0 pointer-events-none'
+        }`}
+        aria-hidden={!isOpen}
+      >
+        <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+          {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              onClick={() => setIsOpen(false)}
+              className={`block px-3 py-2 rounded-md text-base font-medium ${
+                isActive(link.path)
+                  ? 'bg-green-50 text-green-700'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+              }`}
+            >
+              {link.name}
+            </Link>
+          ))}
+          <div className="flex items-center gap-3 px-3 pt-4">
+            <a href={SOCIAL_LINKS.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+              <Icons.Facebook className="w-5 h-5" />
+            </a>
+            <a href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+              <Icons.Twitter className="w-5 h-5" />
+            </a>
+            <a href={SOCIAL_LINKS.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+              <Icons.Instagram className="w-5 h-5" />
+            </a>
+            <a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-green-700 transition-colors">
+              <Icons.Linkedin className="w-5 h-5" />
+            </a>
           </div>
         </div>
-      )}
+      </div>
     </nav>
   );
 };

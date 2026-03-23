@@ -9,7 +9,7 @@ const About: React.FC = () => {
       <div className="relative py-20 bg-gray-900">
         <div className="absolute inset-0 overflow-hidden">
              <img 
-                src="https://coresemintarapaca.cl/wp-content/uploads/2020/06/b.jpg" 
+                src="/b.jpg" 
                 alt="Nosotros" 
                 className="w-full h-full object-cover opacity-20"
             />
@@ -45,7 +45,7 @@ const About: React.FC = () => {
                 </div>
             </div>
             <div className="rounded-2xl overflow-hidden shadow-2xl transform rotate-2 hover:rotate-0 transition duration-500">
-                <img src="https://coresemintarapaca.cl/wp-content/uploads/2020/06/b.jpg" alt="Equipo Coresemin" className="w-full h-full object-cover" />
+                <img src="/b.jpg" alt="Equipo Coresemin" className="w-full h-full object-cover" />
             </div>
         </div>
 

@@ -27,7 +27,8 @@ export interface Article {
   author: string;
   publishDate: string; // ISO string
   blocks: ContentBlock[];
-  category: 'Noticia' | 'Evento' | 'Capacitación';
+  gallery?: string[];
+  category: 'Noticia' | 'Evento' | 'Capacitación' | 'Blog';
 }
 
 export interface EventItem {
@@ -38,6 +39,7 @@ export interface EventItem {
   description: string;
   type: 'Seminario' | 'Reunión' | 'Capacitación';
   image: string;
+  dateEvent: string; // ISO string for event date
 }
 
 export interface TeamMember {

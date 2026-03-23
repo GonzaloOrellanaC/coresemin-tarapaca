@@ -7,7 +7,17 @@ const Events: React.FC = () => {
   const [events, setEvents] = useState<EventItem[]>([]);
 
   useEffect(() => {
-    setEvents(getEvents());
+        // getEvents is async; fetch and set results
+        let mounted = true;
+        (async () => {
+            try {
+                const res = await getEvents();
+                if (mounted) setEvents(res);
+            } catch (e) {
+                if (mounted) setEvents([]);
+            }
+        })();
+        return () => { mounted = false; };
   }, []);
 
   return (
@@ -23,14 +33,15 @@ const Events: React.FC = () => {
                  <div className="bg-white rounded-2xl shadow-sm p-10 text-center text-gray-500">No hay eventos programados.</div>
             ) : (
                 events.map((event) => {
-                    const date = new Date(event.date);
+                    const date = new Date(event.dateEvent);
+                    const isPast = (date.toString() === 'Invalid Date' || date.getTime() < Date.now()) ? true : false;
                     return (
                         <div key={event.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-all duration-300 overflow-hidden flex flex-col md:flex-row group">
                             
                             {/* Image Section */}
                             <div className="md:w-64 lg:w-72 h-48 md:h-auto relative overflow-hidden flex-shrink-0">
                                 <img 
-                                    src={event.image} 
+                                    src={event.coverImage} 
                                     alt={event.title} 
                                     className="absolute inset-0 w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500" 
                                 />
@@ -71,8 +82,11 @@ const Events: React.FC = () => {
                                 </div>
 
                                 <div className="w-full md:w-auto mt-2 md:mt-0 flex-shrink-0 self-center">
-                                    <button className="w-full md:w-auto px-6 py-2.5 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-colors shadow-sm">
-                                        Ver Detalles
+                                    <button
+                                        disabled={isPast}
+                                        className={`w-full md:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-sm ${isPast ? 'bg-gray-100 border border-gray-100 text-gray-400 cursor-not-allowed' : 'bg-white border border-gray-200 text-gray-700 hover:bg-green-50 hover:text-green-700 hover:border-green-200'}`}
+                                    >
+                                        {isPast ? 'Evento terminado' : 'Ver Detalles'}
                                     </button>
                                 </div>
                             </div>

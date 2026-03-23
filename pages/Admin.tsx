@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid'; // Simulation
-import { saveArticle } from '../services/dataService';
+import { saveArticle, login } from '../services/dataService';
 import { Article, ContentBlock } from '../types';
 import { Icons } from '../components/Icons';
 import { CORE_COLOR } from '../constants';
@@ -12,9 +12,13 @@ const Admin: React.FC = () => {
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [coverImage, setCoverImage] = useState('https://picsum.photos/800/400');
-  const [category, setCategory] = useState<'Noticia' | 'Evento' | 'Capacitación'>('Noticia');
+    const [category, setCategory] = useState<'Noticia' | 'Evento' | 'Capacitación' | 'Blog'>('Noticia');
   const [blocks, setBlocks] = useState<ContentBlock[]>([]);
   const [successMsg, setSuccessMsg] = useState('');
+    const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [authError, setAuthError] = useState('');
 
   const addBlock = (type: 'text' | 'image' | 'heading') => {
     const newBlock: ContentBlock = {
@@ -60,14 +64,31 @@ const Admin: React.FC = () => {
       blocks
     };
 
-    saveArticle(newArticle);
-    setSuccessMsg('Noticia publicada exitosamente!');
-    // Reset form
-    setTitle('');
-    setSubtitle('');
-    setBlocks([]);
-    setTimeout(() => setSuccessMsg(''), 3000);
+        (async () => {
+            try {
+                await saveArticle(newArticle, token || undefined);
+                setSuccessMsg('Noticia publicada exitosamente!');
+                setTitle('');
+                setSubtitle('');
+                setBlocks([]);
+                setTimeout(() => setSuccessMsg(''), 3000);
+            } catch (err) {
+                setSuccessMsg('Error al publicar. Revisa permisos.');
+            }
+        })();
   };
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            const t = await login(username, password);
+            setToken(t);
+            localStorage.setItem('token', t);
+            setAuthError('');
+        } catch (err) {
+            setAuthError('Credenciales inválidas');
+        }
+    };
 
   return (
     <div className="min-h-screen bg-gray-100 py-12">
@@ -82,6 +103,18 @@ const Admin: React.FC = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-8">
+                {/* Simple login form for admin */}
+                {!token && (
+                    <div className="bg-gray-50 p-4 rounded">
+                        <h3 className="font-bold mb-2">Iniciar sesión (Admin)</h3>
+                        {authError && <div className="text-red-600 mb-2">{authError}</div>}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-2">
+                            <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Usuario" className="p-2 border rounded" />
+                            <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Contraseña" type="password" className="p-2 border rounded" />
+                            <button onClick={handleLogin} className="px-4 py-2 bg-green-500 text-white rounded">Entrar</button>
+                        </div>
+                    </div>
+                )}
                 {successMsg && (
                     <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
                         <strong className="font-bold">¡Éxito!</strong>
@@ -113,6 +146,7 @@ const Admin: React.FC = () => {
                                 <option value="Noticia">Noticia</option>
                                 <option value="Evento">Evento</option>
                                 <option value="Capacitación">Capacitación</option>
+                                <option value="Blog">Blog</option>
                             </select>
                         </div>
                     </div>

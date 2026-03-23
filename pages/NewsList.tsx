@@ -9,7 +9,10 @@ const NewsList: React.FC = () => {
   const [filter, setFilter] = useState('Todas');
 
   useEffect(() => {
-    setArticles(getArticles());
+    (async () => {
+      const data = await getArticles();
+      setArticles(data);
+    })();
   }, []);
 
   const categories = ['Todas', 'Noticia', 'Capacitación', 'Evento'];

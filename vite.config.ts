@@ -8,6 +8,10 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 4173,
         host: '0.0.0.0',
+        watch: {
+          // ignore server folder so Vite doesn't react to backend changes
+          ignored: ['**/server/**']
+        }
       },
       plugins: [react()],
       define: {
