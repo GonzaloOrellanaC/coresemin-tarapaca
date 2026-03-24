@@ -7,8 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc -p .",
     "start": "node dist/index.js",
-    "pm2:start:ts": "pm2 start src/index.ts --name coresemin --interpreter ./node_modules/.bin/ts-node --watch",
-    "pm2:start:dev": "pm2 start npm --name coresemin -- run dev --watch"
+    "pm2:start:ts": "pm2 start src/index.ts --name coresemin-server --interpreter ./node_modules/.bin/ts-node --watch"
   },
   "dependencies": {
     "cors": "^2.8.5",
@@ -26,6 +25,8 @@
     "@types/multer": "^1.4.7",
     "ts-node": "^10.9.2",
     "ts-node-dev": "^2.0.0",
-    "typescript": "^5.2.2"
+    "typescript": "^5.2.2",
+    "ts-node": "^10.9.1",
+    "pm2": "^5.2.0"
   }
 }

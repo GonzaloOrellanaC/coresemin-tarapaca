@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
 import dotenv from 'dotenv';
 
@@ -13,12 +13,8 @@ router.post('/login', (req, res) => {
   const adminPass = process.env.ADMIN_PASS || 'admin123';
 
   if (username === adminUser && password === adminPass) {
-    const token = jwt.sign(
-      { username },
-      // cast to jwt.Secret to satisfy TypeScript types for jsonwebtoken v9
-      JWT_SECRET as unknown as jwt.Secret,
-      { expiresIn: process.env.JWT_EXPIRES_IN || '1d' } as jwt.SignOptions,
-    );
+    const signOptions: SignOptions = { expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as unknown as SignOptions['expiresIn'] };
+    const token = jwt.sign({ username }, JWT_SECRET as Secret, signOptions);
     return res.json({ token });
   }
 
