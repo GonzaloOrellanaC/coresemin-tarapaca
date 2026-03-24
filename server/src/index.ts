@@ -18,7 +18,12 @@ dotenv.config();
 
 const app = express();
 app.use(helmet());
-app.use(cors());
+app.use(
+  cors({
+    origin: ['https://coresemintarapaca.cl', 'http://localhost:4173'],
+    credentials: true,
+  }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -37,7 +42,13 @@ app.use('/images', express.static(imagesDir));
 app.use(redirects);
 
 const server = http.createServer(app);
-const io = new IOServer(server, { cors: { origin: '*' } });
+const io = new IOServer(server, {
+  cors: {
+    origin: ['https://coresemintarapaca.cl', 'http://localhost:4173'],
+    methods: ['GET', 'POST'],
+    credentials: true,
+  },
+});
 app.set('io', io);
 
 io.on('connection', (socket) => {
