@@ -8,7 +8,7 @@ interface Props {
 }
 
 const EventCard: React.FC<Props> = ({ event, className = '' }) => {
-    const apiBase = ((import.meta  as any).env.VITE_FRONTEND_URL as string) || '';
+    const apiBase = import.meta.env.VITE_FRONTEND_URL;
   const base = apiBase.replace(/\/(?:api\/?)?$/i, '') || window.location.origin.replace(/\/$/, '');
 
   return (

@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { Article, EventItem } from '../types';
 
-const API_BASE = ((import.meta as any).env.VITE_API_URL as string) || 'http://localhost:4000';
+const API_BASE = import.meta.env.VITE_SERVER_URL;
 
-const api = axios.create({ baseURL: API_BASE + '/api' });
+const api = axios.create({ baseURL: API_BASE });
 
 export const getArticles = async (): Promise<Article[]> => {
   const res = await api.get('/news');

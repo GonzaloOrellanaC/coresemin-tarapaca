@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { MONGO_URI } from './config';
 
 export async function connectDB() {
+  console.log('connected to MongoDB at', MONGO_URI);
   try {
     await mongoose.connect(MONGO_URI);
     console.log('MongoDB connected');

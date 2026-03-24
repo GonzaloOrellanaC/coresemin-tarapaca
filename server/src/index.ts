@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import express from 'express';
 import http from 'http';
 import { Server as IOServer } from 'socket.io';
@@ -5,7 +6,6 @@ import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
 import fs from 'fs';
-import dotenv from 'dotenv';
 import { PORT } from './config';
 import { connectDB } from './db';
 import newsRouter from './routes/news';
@@ -14,16 +14,57 @@ import sitemapRouter from './routes/sitemap';
 import robotsRouter from './routes/robots';
 import redirects from './middleware/redirects';
 
-dotenv.config();
-
 const app = express();
-app.use(helmet());
-app.use(
-  cors({
-    origin: ['https://coresemintarapaca.cl', 'http://localhost:4173'],
-    credentials: true,
-  }),
-);
+// Configure helmet with a Content Security Policy that allows the
+// specific inline script hash and trusted script/style sources.
+app.use(helmet({
+  // Disable COEP so external CDNs (Tailwind CDN) are not blocked by embedder policies
+  crossOriginEmbedderPolicy: false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "https://coresemin-tarapaca.omtecnologia.cl",
+        'https://cdn.tailwindcss.com',
+        'http://localhost:4173',
+        'http://localhost:4000',
+        'https://coresemintarapaca.cl',
+        "'sha256-15kmg71PbbXQODa0lp55JVHZAuw48OCvXm8qApL/t7w='",
+      ],
+      connectSrc: ["'self'", 'http://localhost:4173', 'http://localhost:4000', 'https://coresemintarapaca.cl', 
+        "https://coresemin-tarapaca.omtecnologia.cl"],
+      imgSrc: ["'self'", 'data:', 'https://coresemintarapaca.cl', 
+        "https://coresemin-tarapaca.omtecnologia.cl"],
+      styleSrc: [
+        "'self'",
+        'https://cdn.tailwindcss.com',
+        'https://fonts.googleapis.com',
+        "'unsafe-inline'",
+      ],
+      fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
+      objectSrc: ["'none'"],
+    },
+  },
+}));
+
+// Allow CORS from the frontend dev server, the production domain and the Tailwind CDN
+const allowedOrigins = [
+  'http://localhost:4000',
+  'http://localhost:4173',
+  'https://coresemintarapaca.cl',
+  'https://cdn.tailwindcss.com',
+  "https://coresemin-tarapaca.omtecnologia.cl"
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS policy: origin not allowed'));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -44,7 +85,7 @@ app.use(redirects);
 const server = http.createServer(app);
 const io = new IOServer(server, {
   cors: {
-    origin: ['https://coresemintarapaca.cl', 'http://localhost:4173'],
+    origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl', 'https://web.coresemintarapaca.cl', 'http://localhost:4173'],
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -62,10 +103,20 @@ app.use('/', robotsRouter);
 
 // Serve frontend in production (assumes Vite build output in /dist)
 if (process.env.NODE_ENV === 'production') {
-  const staticPath = path.join(process.cwd(), 'dist');
+  const staticPath = path.join(process.cwd(), '..', 'dist');
+  console.log('Serving static files from', staticPath);
   app.use(express.static(staticPath));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(staticPath, 'index.html'));
+  // Only serve index.html for navigation requests (HTML) — avoid returning index.html
+  // for requests to asset files (css/js) which would cause wrong MIME types.
+  app.get('*', (req, res, next) => {
+    console.log('Received request for', req.path, 'with Accept header:', req.headers.accept);
+    const accept = req.headers.accept || '';
+    if (req.method !== 'GET') return next();
+    // If the request looks like it accepts HTML, return index.html
+    if (accept.includes('text/html')) {
+      return res.sendFile(path.join(staticPath, 'index.html'));
+    }
+    return next();
   });
 }
 
