@@ -1,7 +1,7 @@
 import { SocialLinks } from './types';
 
 export const CORE_COLOR = '#028938';
-export const LOGO_URL = '/CORESEMIN-LOGO.png';
+export const LOGO_URL = '/public/CORESEMIN-LOGO.png';
 
 export const SOCIAL_LINKS: SocialLinks = {
   twitter: 'https://x.com/CoreseminTarap',

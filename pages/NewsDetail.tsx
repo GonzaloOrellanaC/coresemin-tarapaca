@@ -91,7 +91,7 @@ const NewsDetail: React.FC = () => {
                     publisher: {
                         "@type": "Organization",
                         name: 'Coresemin Tarapacá',
-                        logo: { "@type": "ImageObject", url: (window.location.origin.replace(/\/$/, '') + '/CORESEMIN-LOGO.png') }
+                        logo: { "@type": "ImageObject", url: (window.location.origin.replace(/\/$/, '') + '/public/CORESEMIN-LOGO.png') }
                     },
                     mainEntityOfPage: { "@type": "WebPage", "@id": window.location.href }
                 })}

@@ -10,7 +10,7 @@ const PresenciaRegional: React.FC = () => {
       <header className="rounded-xl overflow-hidden mb-10 shadow-lg" style={{ background: 'linear-gradient(90deg, rgba(2,6,23,0.6), rgba(16,185,129,0.06))' }}>
         <div className="relative h-48 md:h-64 lg:h-72">
           <img
-            src="/collahuasi-1.jpg"
+            src="/public/collahuasi-1.jpg"
             alt="Presencia Regional Tarapacá"
             className="w-full h-full object-cover opacity-60"
           />

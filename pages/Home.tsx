@@ -156,7 +156,7 @@ const Home: React.FC = () => {
             {/* Background Image */}
             <div className="absolute inset-0 z-0">
                 <img 
-                    src="/collahuasi-1.jpg" 
+                    src="/public/collahuasi-1.jpg" 
                     alt="Minería Tarapacá" 
                     className="w-full h-full object-cover opacity-50"
                 />
