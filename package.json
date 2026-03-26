@@ -1,43 +1,30 @@
 {
-  "name": "coresemin-tarapacá---portal-web",
+  "name": "coresemin-server",
+  "version": "0.1.0",
   "private": true,
-  "version": "1.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "dev:frontend": "vite",
-    "dev:server": "cd server && npm run dev",
-    "dev:both": "concurrently \"npm:dev:frontend\" \"npm:dev:server\"",
-    "import:remote": "node tools/importer/import_and_post.cjs",
-    "import:collect": "node tools/importer/import_collect.cjs",
-    "import:images": "node tools/image_fetcher/download_images.cjs",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start:pm2": "pm2 start npm --name coresemin -- run dev"
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc -p .",
+    "start": "node index.js",
+    "pm2:start:ts": "pm2 start src/index.ts --name coresemin-server --interpreter ./node_modules/.bin/ts-node --watch"
   },
   "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^5.18.0",
-    "@mui/material": "^5.18.0",
-    "@tailwindcss/vite": "^4.2.2",
-    "axios": "^1.7.2",
-    "cheerio": "^1.0.0-rc.12",
-    "dompurify": "^2.4.0",
-    "lucide-react": "^0.562.0",
-    "react": "^19.2.3",
-    "react-dom": "^19.2.3",
-    "react-router-dom": "^7.12.0",
-    "swiper": "^12.1.2",
-    "tailwindcss": "^4.2.2",
-    "uuid": "^13.0.0"
+    "cors": "^2.8.5",
+    "dotenv": "^16.6.1",
+    "express": "^4.18.2",
+    "helmet": "^6.0.1",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.3.1",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.7.2"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "concurrently": "^8.2.0",
-    "pm2": "^5.3.1",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "@types/express": "^4.17.20",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/multer": "^1.4.7",
+    "pm2": "^5.2.0",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.2.2"
   }
 }

@@ -1,0 +1,46 @@
+{
+  "name": "coresemin-tarapacá---portal-web",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start-server": "cd server && npm run start",
+    "dev:frontend": "vite",
+    "dev:server": "cd server && npm run dev",
+    "dev:both": "concurrently \"npm:dev:frontend\" \"npm:dev:server\"",
+    "import:remote": "node tools/importer/import_and_post.cjs",
+    "import:collect": "node tools/importer/import_collect.cjs",
+    "import:images": "node tools/image_fetcher/download_images.cjs",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start:pm2": "pm2 start npm --name coresemin -- run dev",
+    "postinstall": "cd server && npm install",
+    "start": "node server/index.js"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^5.18.0",
+    "@mui/material": "^5.18.0",
+    "@tailwindcss/vite": "^4.2.2",
+    "axios": "^1.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "dompurify": "^2.4.0",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-router-dom": "^7.12.0",
+    "swiper": "^12.1.2",
+    "tailwindcss": "^4.2.2",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^8.2.0",
+    "pm2": "^5.3.1",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
