@@ -21,6 +21,7 @@ const Server = () => {
   app.use(helmet({
     // Disable COEP so external CDNs (Tailwind CDN) are not blocked by embedder policies
     crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
@@ -95,7 +96,6 @@ const Server = () => {
   } else {
     console.log('Serving images from', imagesDir);
   }
-  app.use('/images', cors({ origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl'], credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }), express.static(imagesDir));
   app.use('/images',
     (req, res, next) => {
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
