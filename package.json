@@ -6,9 +6,13 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc -p .",
     "start": "node index.js",
-    "pm2:start:ts": "pm2 start src/index.ts --name coresemin-server --interpreter ./node_modules/.bin/ts-node --watch"
+    "pm2:start:ts": "pm2 start src/index.ts --name coresemin-server --interpreter ./node_modules/.bin/ts-node --watch",
+    "create-zip": "node scripts/create-zip.js"
   },
   "dependencies": {
+    "archiver": "^5.3.1",
+    "fast-glob": "^3.2.12",
+    "ignore": "^5.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.18.2",

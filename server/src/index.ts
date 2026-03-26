@@ -33,10 +33,19 @@ const Server = () => {
           'https://coresemintarapaca.cl',
           "'sha256-15kmg71PbbXQODa0lp55JVHZAuw48OCvXm8qApL/t7w='",
         ],
-        connectSrc: ["'self'", 'http://localhost:4173', 'http://localhost:4000', 'https://coresemintarapaca.cl', 
-          "https://coresemin-tarapaca.omtecnologia.cl"],
-        imgSrc: ["'self'", 'data:', 'https://coresemintarapaca.cl', 
-          "https://coresemin-tarapaca.omtecnologia.cl"],
+        connectSrc: [
+          "'self'",
+          'http://localhost:4173',
+          'http://localhost:4000',
+          'https://coresemintarapaca.cl', 
+          "https://coresemin-tarapaca.omtecnologia.cl"
+        ],
+        imgSrc: [
+          "'self'",
+          'data:',
+          'https://coresemintarapaca.cl', 
+          "https://coresemin-tarapaca.omtecnologia.cl"
+        ],
         styleSrc: [
           "'self'",
           'https://cdn.tailwindcss.com',
@@ -122,7 +131,9 @@ const Server = () => {
   }
 
   async function start() {
-    await connectDB();
+    if (process.env.SERVER_MODE === 'server') {
+      await connectDB();
+    }
     server.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
