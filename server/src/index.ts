@@ -74,6 +74,7 @@ const Server = () => {
       return callback(new Error('CORS policy: origin not allowed'));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   }));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
@@ -87,7 +88,7 @@ const Server = () => {
   } else {
     console.log('Serving images from', imagesDir);
   }
-  app.use('/images', cors({ origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl'], credentials: true }), express.static(imagesDir));
+  app.use('/images', cors({ origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl'], credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }), express.static(imagesDir));
 
   // Redirects from old WordPress URLs
   app.use(redirects);
