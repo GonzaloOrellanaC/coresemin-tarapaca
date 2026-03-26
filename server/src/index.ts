@@ -79,7 +79,14 @@ const Server = () => {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+  app.use('/uploads',
+    (req, res, next) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      next();
+    },
+    cors({ origin: 'https://coresemintarapaca.cl', credentials: true }),
+    express.static(path.join(process.cwd(), 'uploads'))
+  );
   // Serve public images folder (all subfolders and files) as static.
   // Use __dirname so path works when server process cwd is the server folder.
   const imagesDir = path.join(__dirname, '..', 'app', 'public', 'images');
@@ -89,6 +96,14 @@ const Server = () => {
     console.log('Serving images from', imagesDir);
   }
   app.use('/images', cors({ origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl'], credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }), express.static(imagesDir));
+  app.use('/images',
+    (req, res, next) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      next();
+    },
+    cors({ origin: 'https://coresemintarapaca.cl', credentials: true }),
+    express.static(imagesDir)
+  );
 
   // Redirects from old WordPress URLs
   app.use(redirects);
