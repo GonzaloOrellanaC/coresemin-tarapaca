@@ -87,7 +87,7 @@ const Server = () => {
   } else {
     console.log('Serving images from', imagesDir);
   }
-  app.use('/images', cors({ origin: 'https://coresemintarapaca.cl', credentials: true }), express.static(imagesDir));
+  app.use('/images', cors({ origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl'], credentials: true }), express.static(imagesDir));
 
   // Redirects from old WordPress URLs
   app.use(redirects);
