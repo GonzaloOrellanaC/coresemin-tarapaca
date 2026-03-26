@@ -6,7 +6,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc -p .",
     "start": "node index.js",
-    "pm2:start:ts": "pm2 start src/index.ts --name coresemin-server --interpreter ./node_modules/.bin/ts-node --watch"
+    "pm2:start": "pm2 start index.js --name coresemin-server"
   },
   "dependencies": {
     "cors": "^2.8.5",
