@@ -91,7 +91,7 @@ const Server = () => {
     else {
         console.log('Serving images from', imagesDir);
     }
-    app.use('/images', express_1.default.static(imagesDir));
+    app.use('/images', (0, cors_1.default)({ origin: 'https://coresemintarapaca.cl', credentials: true }), express_1.default.static(imagesDir));
     // Redirects from old WordPress URLs
     app.use(redirects_1.default);
     const server = http_1.default.createServer(app);

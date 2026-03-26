@@ -14,13 +14,13 @@ const NewsDetail: React.FC = () => {
   const [imageBanner, setImageBanner] = useState<string | null>(null);
     const [galleryOpen, setGalleryOpen] = useState(false);
     const [galleryIndex, setGalleryIndex] = useState(0);
-  const apiBase = import.meta.env.VITE_FRONTEND_URL;
+  const apiBase = (import.meta as any).env.VITE_FRONTEND_URL;
   console.log('API Base URL:', apiBase);
   const base = apiBase.replace(/\/(?:api\/?)?$/i, '')
 
   useEffect(() => {
     if (article?.coverImage) {
-      setImageBanner((article.coverImage as string).includes('http') ? article.coverImage : `${base}/${article.coverImage}`);
+      setImageBanner((article.coverImage as string).includes('http') ? article.coverImage : `${base}${article.coverImage}`);
     }
   }, [article, base]);
 
