@@ -25,6 +25,7 @@ const Server = () => {
     app.use((0, helmet_1.default)({
         // Disable COEP so external CDNs (Tailwind CDN) are not blocked by embedder policies
         crossOriginEmbedderPolicy: false,
+        crossOriginResourcePolicy: { policy: 'cross-origin' },
         contentSecurityPolicy: {
             directives: {
                 defaultSrc: ["'self'"],
@@ -78,10 +79,14 @@ const Server = () => {
             return callback(new Error('CORS policy: origin not allowed'));
         },
         credentials: true,
+        methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
     }));
     app.use(express_1.default.json());
     app.use(express_1.default.urlencoded({ extended: true }));
-    app.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
+    app.use('/uploads', (req, res, next) => {
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        next();
+    }, (0, cors_1.default)({ origin: 'https://coresemintarapaca.cl', credentials: true }), express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
     // Serve public images folder (all subfolders and files) as static.
     // Use __dirname so path works when server process cwd is the server folder.
     const imagesDir = path_1.default.join(__dirname, '..', 'app', 'public', 'images');
@@ -91,7 +96,10 @@ const Server = () => {
     else {
         console.log('Serving images from', imagesDir);
     }
-    app.use('/images', (0, cors_1.default)({ origin: 'https://coresemintarapaca.cl', credentials: true }), express_1.default.static(imagesDir));
+    app.use('/images', (req, res, next) => {
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        next();
+    }, (0, cors_1.default)({ origin: 'https://coresemintarapaca.cl', credentials: true }), express_1.default.static(imagesDir));
     // Redirects from old WordPress URLs
     app.use(redirects_1.default);
     const server = http_1.default.createServer(app);
