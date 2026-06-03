@@ -2,8 +2,9 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface Block {
   id: string;
-  type: 'text' | 'image';
+  type: 'text' | 'image' | 'heading' | 'link';
   content: string;
+  linkName?: string;
   styles?: Record<string, any>;
 }
 
@@ -24,6 +25,7 @@ const BlockSchema = new Schema<Block>({
   id: { type: String, required: true },
   type: { type: String, required: true },
   content: { type: String, required: true },
+  linkName: { type: String },
   styles: { type: Schema.Types.Mixed }
 });
 

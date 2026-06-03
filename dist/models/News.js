@@ -39,6 +39,7 @@ const BlockSchema = new mongoose_1.Schema({
     id: { type: String, required: true },
     type: { type: String, required: true },
     content: { type: String, required: true },
+    linkName: { type: String },
     styles: { type: mongoose_1.Schema.Types.Mixed }
 });
 const NewsSchema = new mongoose_1.Schema({

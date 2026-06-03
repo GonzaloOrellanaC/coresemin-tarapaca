@@ -8,6 +8,8 @@ import { CORE_COLOR } from '../constants';
 const Admin: React.FC = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('auth_token');
+    const apiBase = (import.meta as any).env.VITE_FRONTEND_URL || '';
+    const base = apiBase.replace(/\/(?:api\/?)?$/i, '');
 
     useEffect(() => {
         if (!token) {
@@ -232,7 +234,11 @@ const Admin: React.FC = () => {
                                     {block.type === 'image' ? (
                                         <div className="flex gap-4">
                                             <div className="w-1/3 aspect-video bg-gray-100 rounded overflow-hidden relative group/img">
-                                                <img src={block.content} className="w-full h-full object-cover" alt="Preview"/>
+                                                <img 
+                                                    src={block.content.startsWith('http') || block.content.startsWith('blob:') ? block.content : `${base}${block.content}`} 
+                                                    className="w-full h-full object-cover" 
+                                                    alt="Preview"
+                                                />
                                                 <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-white text-xs font-bold">
                                                     Cargar Imagen
                                                     <input 

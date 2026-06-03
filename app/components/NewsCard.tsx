@@ -10,11 +10,17 @@ interface NewsCardProps {
 }
 
 const NewsCard: React.FC<NewsCardProps> = ({ article, featured = false }) => {
+  const apiBase = (import.meta as any).env.VITE_FRONTEND_URL || '';
+  const base = apiBase.replace(/\/(?:api\/?)?$/i, '');
+  const coverSrc = article.coverImage instanceof File 
+    ? URL.createObjectURL(article.coverImage) 
+    : (article.coverImage.startsWith('http') ? article.coverImage : `${base}${article.coverImage}`);
+
   return (
     <div className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col ${featured ? 'md:col-span-2 md:flex-row' : 'h-full'}`}>
       <div className={`relative overflow-hidden ${featured ? 'md:w-2/3 h-64 md:h-auto' : 'h-48'}`}>
         <img 
-          src={article.coverImage} 
+          src={coverSrc} 
           alt={article.title} 
           style={{ maxHeight: 500 }}
           className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
