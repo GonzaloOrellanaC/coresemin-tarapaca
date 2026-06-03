@@ -3,7 +3,8 @@ import {
   Calendar, MapPin, ArrowRight, Home, Users, BookOpen, 
   Settings, Plus, Trash2, Image as ImageIcon, Type, 
   Layout, Save, Search, ChevronRight, BarChart, TrendingUp,
-  Activity, ShieldCheck, Award, Megaphone, Mail, Phone, Send, Check
+  Activity, ShieldCheck, Award, Megaphone, Mail, Phone, Send, Check,
+  Eye, LogOut, Edit, ExternalLink, Info
 } from 'lucide-react';
 
 export const Icons = {
@@ -11,5 +12,6 @@ export const Icons = {
   Calendar, MapPin, ArrowRight, Home, Users, BookOpen,
   Settings, Plus, Trash2, Image: ImageIcon, Type,
   Layout, Save, Search, ChevronRight, BarChart, TrendingUp,
-  Activity, ShieldCheck, Award, Megaphone, Mail, Phone, Send, Check
+  Activity, ShieldCheck, Award, Megaphone, Mail, Phone, Send, Check,
+  Eye, LogOut, Edit, ExternalLink, Info
 };

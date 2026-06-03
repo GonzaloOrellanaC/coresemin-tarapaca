@@ -9,6 +9,8 @@ import NewsDetail from './pages/NewsDetail';
 import Events from './pages/Events';
 import PresenciaRegional from './pages/PresenciaRegional';
 import Admin from './pages/Admin';
+import AdminEdit from './pages/AdminEdit';
+import AdminDashboard from './pages/AdminDashboard';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Blogs from './pages/Blogs';
@@ -42,7 +44,17 @@ const App: React.FC = () => {
             <Route path="/contacto" element={<Contact />} />
             <Route path="/admin" element={
               <ProtectedRoute>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/create" element={
+              <ProtectedRoute>
                 <Admin />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/edit/:slug" element={
+              <ProtectedRoute>
+                <AdminEdit />
               </ProtectedRoute>
             } />
             <Route path="/login" element={<Login />} />

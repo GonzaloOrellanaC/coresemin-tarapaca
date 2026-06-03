@@ -124,7 +124,7 @@ const NewsDetail: React.FC = () => {
 
         {/* Content */}
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
-            <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed mb-10 border-l-4 pl-4 italic" style={{ borderColor: CORE_COLOR }}>
+            <p className="text-xl md:text-2xl text-gray-600 font-light leading-relaxed mb-10 border-l-4 pl-4 italic whitespace-pre-wrap" style={{ borderColor: CORE_COLOR }}>
                 {article.subtitle}
             </p>
 
@@ -132,20 +132,34 @@ const NewsDetail: React.FC = () => {
                 {article.blocks.map((block) => {
                     if (block.type === 'text') {
                         return (
-                            <div key={block.id} className={`prose prose-lg text-gray-700 max-w-none ${block.styles?.align === 'center' ? 'text-center' : block.styles?.align === 'right' ? 'text-right' : 'text-left'}`}>
+                            <div key={block.id} className={`prose prose-lg text-gray-700 max-w-none whitespace-pre-wrap ${block.styles?.align === 'center' ? 'text-center' : block.styles?.align === 'right' ? 'text-right' : 'text-left'}`}>
                                 <div className={block.styles?.bold ? 'font-bold' : ''} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.content || '') }} />
                             </div>
                         );
                     } else if (block.type === 'image') {
                         return (
-                            <figure key={block.id} className={`my-8 ${block.styles?.width === 'half' ? 'md:w-1/2 md:float-left md:mr-6' : 'w-full'}`}>
+                            <figure key={block.id} className={`my-8 flex justify-center ${block.styles?.width === 'half' ? 'md:w-1/2 md:float-left md:mr-6' : 'w-full'}`}>
                                 <img 
                                     src={block.content} 
                                     alt="Contenido articulo" 
-                                    className="rounded-xl shadow-lg w-full object-cover"
+                                    className="rounded-xl shadow-lg object-contain"
+                                    style={{ maxHeight: '200px' }}
                                 />
                                 {/* Optional caption logic could go here */}
                             </figure>
+                        );
+                    } else if (block.type === 'link') {
+                        return (
+                            <div key={block.id} className="my-8 flex justify-center">
+                                <a 
+                                    href={block.content} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="px-8 py-4 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:bg-green-700 transition-all transform hover:-translate-y-1 inline-flex items-center gap-2"
+                                >
+                                    {block.linkName || 'Leer más'} <Icons.ExternalLink className="w-5 h-5" />
+                                </a>
+                            </div>
                         );
                     } else if (block.type === 'heading') {
                          return <h2 key={block.id} className="text-2xl font-bold text-gray-800 mt-8 mb-4">{block.content}</h2>

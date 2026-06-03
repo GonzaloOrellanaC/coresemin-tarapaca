@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CORE_COLOR } from '../constants';
+import { login } from '../services/dataService';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -21,11 +22,11 @@ const Login: React.FC = () => {
     }
 
     try {
-      // Simulate authentication success and store a token
-      localStorage.setItem('auth_token', 'demo-token');
+      const token = await login(email, password);
+      localStorage.setItem('auth_token', token);
       navigate(from, { replace: true });
     } catch (err) {
-      setError('Error al iniciar sesión');
+      setError('Credenciales inválidas o error de conexión');
     }
   };
 

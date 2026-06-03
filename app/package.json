@@ -15,7 +15,6 @@
     "build": "vite build",
     "preview": "vite preview",
     "start:pm2": "pm2 start npm --name coresemin -- run dev",
-    "postinstall": "cd server && npm install",
     "start": "node server/index.js"
   },
   "dependencies": {

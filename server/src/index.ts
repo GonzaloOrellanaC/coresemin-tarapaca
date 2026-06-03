@@ -14,6 +14,7 @@ import sitemapRouter from './routes/sitemap';
 import robotsRouter from './routes/robots';
 import redirects from './middleware/redirects';
 
+
 const Server = () => {
   const app = express();
   // Configure helmet with a Content Security Policy that allows the
@@ -32,6 +33,7 @@ const Server = () => {
           'http://localhost:4173',
           'http://localhost:4000',
           'https://coresemintarapaca.cl',
+          'https://www.coresemintarapaca.cl',
           "'sha256-15kmg71PbbXQODa0lp55JVHZAuw48OCvXm8qApL/t7w='",
         ],
         connectSrc: [
@@ -39,12 +41,14 @@ const Server = () => {
           'http://localhost:4173',
           'http://localhost:4000',
           'https://coresemintarapaca.cl', 
+          'https://www.coresemintarapaca.cl',
           "https://coresemin-tarapaca.omtecnologia.cl"
         ],
         imgSrc: [
           "'self'",
           'data:',
           'https://coresemintarapaca.cl', 
+          'https://www.coresemintarapaca.cl',
           "https://coresemin-tarapaca.omtecnologia.cl"
         ],
         styleSrc: [
@@ -64,6 +68,7 @@ const Server = () => {
     'http://localhost:4000',
     'http://localhost:4173',
     'https://coresemintarapaca.cl',
+    'https://www.coresemintarapaca.cl',
     'https://cdn.tailwindcss.com',
     "https://coresemin-tarapaca.omtecnologia.cl"
   ];
@@ -85,7 +90,7 @@ const Server = () => {
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       next();
     },
-    cors({ origin: 'https://coresemintarapaca.cl', credentials: true }),
+    cors({ origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl'], credentials: true }),
     express.static(path.join(process.cwd(), 'uploads'))
   );
   // Serve public images folder (all subfolders and files) as static.
@@ -101,7 +106,7 @@ const Server = () => {
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       next();
     },
-    cors({ origin: 'https://coresemintarapaca.cl', credentials: true }),
+    cors({ origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl'], credentials: true }),
     express.static(imagesDir)
   );
 
@@ -111,7 +116,7 @@ const Server = () => {
   const server = http.createServer(app);
   const io = new IOServer(server, {
     cors: {
-      origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl', 'https://web.coresemintarapaca.cl', 'http://localhost:4173'],
+      origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl', 'https://web.coresemintarapaca.cl', 'http://localhost:4173'],
       methods: ['GET', 'POST'],
       credentials: true,
     },
@@ -147,6 +152,7 @@ const Server = () => {
   }
 
   async function start() {
+    console.log('Starting server in mode:', process.env.SERVER_MODE);
     if (process.env.SERVER_MODE === 'server') {
       await connectDB();
     }

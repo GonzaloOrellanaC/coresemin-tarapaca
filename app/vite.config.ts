@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
 
   return {
       server: {
-        port: 4174,
+        port: 4173,
         host: '0.0.0.0',
         watch: {
           // ignore server folder so Vite doesn't react to backend changes

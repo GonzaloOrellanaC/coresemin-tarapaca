@@ -1,13 +1,24 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
 import { MONGO_URI } from './config';
 
 export async function connectDB() {
-  console.log('connected to MongoDB at', MONGO_URI);
   try {
     await mongoose.connect(MONGO_URI);
     console.log('MongoDB connected');
   } catch (err) {
     console.error('MongoDB connection error', err);
-    process.exit(1);
+    
+    // Configura servidores DNS externos (Google y Cloudflare) antes de reintentar
+    dns.setServers(['8.8.8.8', '8.8.4.4', '1.1.1.1']);
+    console.log('Reintentando resolución con DNS externos...');
+
+    try {
+      await mongoose.connect(MONGO_URI);
+      console.log('MongoDB connected via custom DNS');
+    } catch (retryErr) {
+      console.error('MongoDB connection error after custom DNS', retryErr);
+      process.exit(1);
+    }
   }
 }

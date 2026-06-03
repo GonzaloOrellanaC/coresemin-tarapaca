@@ -36,6 +36,7 @@ const Server = () => {
                     'http://localhost:4173',
                     'http://localhost:4000',
                     'https://coresemintarapaca.cl',
+                    'https://www.coresemintarapaca.cl',
                     "'sha256-15kmg71PbbXQODa0lp55JVHZAuw48OCvXm8qApL/t7w='",
                 ],
                 connectSrc: [
@@ -43,12 +44,14 @@ const Server = () => {
                     'http://localhost:4173',
                     'http://localhost:4000',
                     'https://coresemintarapaca.cl',
+                    'https://www.coresemintarapaca.cl',
                     "https://coresemin-tarapaca.omtecnologia.cl"
                 ],
                 imgSrc: [
                     "'self'",
                     'data:',
                     'https://coresemintarapaca.cl',
+                    'https://www.coresemintarapaca.cl',
                     "https://coresemin-tarapaca.omtecnologia.cl"
                 ],
                 styleSrc: [
@@ -67,6 +70,7 @@ const Server = () => {
         'http://localhost:4000',
         'http://localhost:4173',
         'https://coresemintarapaca.cl',
+        'https://www.coresemintarapaca.cl',
         'https://cdn.tailwindcss.com',
         "https://coresemin-tarapaca.omtecnologia.cl"
     ];
@@ -86,7 +90,7 @@ const Server = () => {
     app.use('/uploads', (req, res, next) => {
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
         next();
-    }, (0, cors_1.default)({ origin: 'https://coresemintarapaca.cl', credentials: true }), express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
+    }, (0, cors_1.default)({ origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl'], credentials: true }), express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
     // Serve public images folder (all subfolders and files) as static.
     // Use __dirname so path works when server process cwd is the server folder.
     const imagesDir = path_1.default.join(__dirname, '..', 'app', 'public', 'images');
@@ -99,13 +103,13 @@ const Server = () => {
     app.use('/images', (req, res, next) => {
         res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
         next();
-    }, (0, cors_1.default)({ origin: 'https://coresemintarapaca.cl', credentials: true }), express_1.default.static(imagesDir));
+    }, (0, cors_1.default)({ origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl'], credentials: true }), express_1.default.static(imagesDir));
     // Redirects from old WordPress URLs
     app.use(redirects_1.default);
     const server = http_1.default.createServer(app);
     const io = new socket_io_1.Server(server, {
         cors: {
-            origin: ['https://coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl', 'https://web.coresemintarapaca.cl', 'http://localhost:4173'],
+            origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl', 'https://web.coresemintarapaca.cl', 'http://localhost:4173'],
             methods: ['GET', 'POST'],
             credentials: true,
         },
@@ -138,6 +142,7 @@ const Server = () => {
         });
     }
     async function start() {
+        console.log('Starting server in mode:', process.env.SERVER_MODE);
         if (process.env.SERVER_MODE === 'server') {
             await (0, db_1.connectDB)();
         }

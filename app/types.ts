@@ -5,12 +5,13 @@ export interface SocialLinks {
   linkedin: string;
 }
 
-export type BlockType = 'text' | 'image' | 'heading';
+export type BlockType = 'text' | 'image' | 'heading' | 'link';
 
 export interface ContentBlock {
   id: string;
   type: BlockType;
-  content: string; // Text content or Image URL
+  content: string; // Text content, Image URL, or Link URL
+  linkName?: string; // For 'link' block
   styles?: {
     bold?: boolean;
     align?: 'left' | 'center' | 'right';
@@ -23,11 +24,11 @@ export interface Article {
   slug: string;
   title: string;
   subtitle: string;
-  coverImage: string;
+  coverImage: string | File;
   author: string;
   publishDate: string; // ISO string
   blocks: ContentBlock[];
-  gallery?: string[];
+  gallery?: (string | File)[];
   category: 'Noticia' | 'Evento' | 'Capacitación' | 'Blog';
 }
 

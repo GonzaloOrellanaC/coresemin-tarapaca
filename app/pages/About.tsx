@@ -60,7 +60,7 @@ const About: React.FC = () => {
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Visión</h3>
                 <p className="text-gray-600 leading-relaxed">
-                    Ser una corporación reconocida que agregue valor a la seguridad minera.
+                    Ser el principal referente y articulador técnico de la seguridad minera y la salud ocupacional en Tarapacá, impulsando una cultura preventiva sólida, colaborativa y sostenible.
                 </p>
             </div>
 
@@ -73,7 +73,7 @@ const About: React.FC = () => {
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 mb-4">Misión</h3>
                 <p className="text-gray-600 leading-relaxed">
-                    Nuestros esfuerzos están dirigidos al sector minero de la región de Tarapacá a través de las buenas prácticas.
+                    Articular y coordinar alianzas público-privadas entre empresas, trabajadores, CPHS, autoridades y otros actores, para promover la prevención, el aprendizaje continuo y la difusión técnica, fortaleciendo la seguridad minera y la salud ocupacional, protegiendo la vida y contribuyendo al desarrollo responsable de la región.
                 </p>
             </div>
 

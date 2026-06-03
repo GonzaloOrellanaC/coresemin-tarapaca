@@ -1,47 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { saveArticle } from '../services/dataService';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getArticleBySlug, updateArticle } from '../services/dataService';
 import { Article, ContentBlock } from '../types';
 import { Icons } from '../components/Icons';
 import { CORE_COLOR } from '../constants';
 
-const Admin: React.FC = () => {
+const AdminEdit: React.FC = () => {
+    const { slug } = useParams<{ slug: string }>();
     const navigate = useNavigate();
     const token = localStorage.getItem('auth_token');
+
+    const [id, setId] = useState('');
+    const [title, setTitle] = useState('');
+    const [subtitle, setSubtitle] = useState('');
+    const [coverImage, setCoverImage] = useState<string | File>('');
+    const [category, setCategory] = useState<'Noticia' | 'Evento' | 'Capacitación' | 'Blog'>('Noticia');
+    const [publishDate, setPublishDate] = useState(new Date().toISOString().split('T')[0]);
+    const [blocks, setBlocks] = useState<ContentBlock[]>([]);
+    const [blockFiles, setBlockFiles] = useState<{[key: string]: File}>({});
+    const [gallery, setGallery] = useState<(string | File)[]>([]);
+    const [successMsg, setSuccessMsg] = useState('');
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!token) {
             navigate('/login');
+            return;
         }
-    }, [token, navigate]);
 
-  const [title, setTitle] = useState('');
-  const [subtitle, setSubtitle] = useState('');
-  const [coverImage, setCoverImage] = useState<string | File>('');
-  const [category, setCategory] = useState<'Noticia' | 'Evento' | 'Capacitación' | 'Blog'>('Noticia');
-  const [publishDate, setPublishDate] = useState(new Date().toISOString().split('T')[0]);
-  const [blocks, setBlocks] = useState<ContentBlock[]>([]);
-  const [blockFiles, setBlockFiles] = useState<{[key: string]: File}>({});
-  const [gallery, setGallery] = useState<File[]>([]);
-  const [successMsg, setSuccessMsg] = useState('');
+        if (slug) {
+            (async () => {
+                const article = await getArticleBySlug(slug);
+                if (article) {
+                    setId(article.id);
+                    setTitle(article.title);
+                    setSubtitle(article.subtitle || '');
+                    setCoverImage(article.coverImage || '');
+                    setCategory(article.category as any);
+                    setPublishDate(new Date(article.publishDate).toISOString().split('T')[0]);
+                    setBlocks(article.blocks || []);
+                    setGallery(article.gallery || []);
+                }
+                setLoading(false);
+            })();
+        }
+    }, [token, slug, navigate]);
 
   // Simple UID generator
   const generateId = () => Math.random().toString(36).substr(2, 9);
 
-  const addBlock = (type: 'text' | 'image' | 'heading' | 'link') => {
-    const newBlock: ContentBlock = {
-      id: generateId(),
-      type,
-      content: type === 'image' ? '/CORESEMIN-LOGO.png' : '',
-      linkName: type === 'link' ? 'Leer más' : undefined,
-      styles: { width: 'full', align: 'left' }
+    const addBlock = (type: 'text' | 'image' | 'heading' | 'link') => {
+        const newBlock: ContentBlock = {
+            id: generateId(),
+            type,
+            content: type === 'image' ? '/CORESEMIN-LOGO.png' : '',
+            linkName: type === 'link' ? 'Leer más' : undefined,
+            styles: { width: 'full', align: 'left' }
+        };
+        setBlocks([...blocks, newBlock]);
     };
-    setBlocks([...blocks, newBlock]);
-  };
 
-  const updateBlock = (id: string, content: string, linkName?: string) => {
-    setBlocks(blocks.map(b => b.id === id ? { ...b, content, linkName: linkName !== undefined ? linkName : b.linkName } : b));
-  };
+    const updateBlock = (id: string, content: string, linkName?: string) => {
+        setBlocks(blocks.map(b => b.id === id ? { ...b, content, linkName: linkName !== undefined ? linkName : b.linkName } : b));
+    };
 
   const removeBlock = (id: string) => {
     setBlocks(blocks.filter(b => b.id !== id));
@@ -61,8 +82,8 @@ const Admin: React.FC = () => {
         e.preventDefault();
         if (!title || !subtitle) return;
 
-        const newArticle: Article = {
-          id: generateId(),
+        const updatedArticle: Article = {
+          id,
           slug: title.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, ''),
           title,
           subtitle,
@@ -76,17 +97,21 @@ const Admin: React.FC = () => {
 
         (async () => {
             try {
-                await saveArticle(newArticle, token || undefined, blockFiles);
-                setSuccessMsg('Noticia publicada exitosamente!');
+                await updateArticle(id, updatedArticle, token || undefined, blockFiles);
+                setSuccessMsg('Noticia actualizada exitosamente!');
                 setTimeout(() => {
                     setSuccessMsg('');
                     navigate('/admin');
                 }, 2000);
             } catch (err) {
-                setSuccessMsg('Error al publicar. Revisa permisos.');
+                setSuccessMsg('Error al actualizar. Revisa permisos.');
             }
         })();
     };
+
+    if (loading) {
+        return <div className="min-h-screen flex items-center justify-center">Cargando...</div>;
+    }
 
   return (
     <div className="min-h-screen bg-gray-100 py-12">
@@ -95,9 +120,11 @@ const Admin: React.FC = () => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden">
             <div className="bg-gray-900 px-8 py-6 border-b border-gray-800 flex justify-between items-center">
                 <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                    <Icons.Settings className="text-green-500"/> Panel de Administración
+                    <Icons.Settings className="text-green-500"/> Editar Noticia
                 </h1>
-                <span className="text-xs text-gray-500 bg-gray-800 px-3 py-1 rounded-full">v1.0.0</span>
+                <button onClick={() => navigate('/admin')} className="text-gray-400 hover:text-white transition-colors">
+                    Volver al panel
+                </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-8">
@@ -190,16 +217,18 @@ const Admin: React.FC = () => {
                     <textarea 
                         value={subtitle}
                         onChange={(e) => setSubtitle(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none h-20 resize-none"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 outline-none transition"
+                        rows={2}
+                        placeholder="Breve resumen de la noticia..."
                         required
                     />
                 </div>
 
-                {/* Content Blocks Editor */}
-                <div className="border-t border-gray-200 pt-8">
-                    <div className="flex justify-between items-center mb-6">
-                        <h3 className="text-lg font-bold text-gray-800">Cuerpo de la Noticia</h3>
-                        <div className="flex space-x-2">
+                {/* Content Builder */}
+                <div className="border-t border-gray-100 pt-8">
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-bold text-gray-900">Bloques de Contenido</h3>
+                        <div className="flex gap-2">
                             <button type="button" onClick={() => addBlock('heading')} className="flex items-center gap-1 px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm text-gray-700 transition">
                                 <Icons.Type className="w-4 h-4" /> Título
                             </button>
@@ -214,6 +243,7 @@ const Admin: React.FC = () => {
                             </button>
                         </div>
                     </div>
+
                     <div className="space-y-4 bg-gray-50 p-6 rounded-xl border border-gray-200 min-h-[200px]">
                         {blocks.length === 0 && <p className="text-center text-gray-400 py-10">Agrega bloques de contenido para comenzar.</p>}
                         
@@ -234,7 +264,7 @@ const Admin: React.FC = () => {
                                             <div className="w-1/3 aspect-video bg-gray-100 rounded overflow-hidden relative group/img">
                                                 <img src={block.content} className="w-full h-full object-cover" alt="Preview"/>
                                                 <label className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center cursor-pointer text-white text-xs font-bold">
-                                                    Cargar Imagen
+                                                    Cambiar Imagen
                                                     <input 
                                                         type="file" 
                                                         className="hidden" 
@@ -258,7 +288,7 @@ const Admin: React.FC = () => {
                                                         disabled
                                                         className="w-full p-2 text-sm border rounded bg-gray-50 text-gray-400"
                                                     />
-                                                    <p className="text-[10px] text-gray-400">Las imágenes se guardarán automáticamente al publicar.</p>
+                                                    <p className="text-[10px] text-gray-400">Para mejores resultados usa imágenes horizontales.</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -327,10 +357,10 @@ const Admin: React.FC = () => {
                     
                     {gallery.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {gallery.map((file, idx) => (
+                            {gallery.map((item, idx) => (
                                 <div key={idx} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
                                     <img 
-                                        src={URL.createObjectURL(file)} 
+                                        src={typeof item === 'string' ? item : URL.createObjectURL(item)} 
                                         className="w-full h-full object-cover" 
                                         alt={`Gallery ${idx}`}
                                     />
@@ -352,21 +382,21 @@ const Admin: React.FC = () => {
                     )}
                 </div>
 
-                <div className="flex justify-end pt-4">
+                <div className="flex justify-end pt-8">
                     <button 
-                        type="submit" 
-                        className="flex items-center gap-2 px-8 py-3 rounded-lg text-white font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                        type="submit"
+                        className="px-8 py-3 rounded-xl text-white font-bold shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all"
                         style={{ backgroundColor: CORE_COLOR }}
                     >
-                        <Icons.Save className="w-5 h-5" /> Publicar Noticia
+                        Guardar Cambios
                     </button>
                 </div>
-
             </form>
         </div>
+
       </div>
     </div>
   );
 };
 
-export default Admin;
+export default AdminEdit;

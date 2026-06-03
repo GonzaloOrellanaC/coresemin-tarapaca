@@ -38,6 +38,8 @@ const NewsSchema = new Schema<NewsDoc>({
   blocks: { type: [BlockSchema], default: [] },
   gallery: { type: [String], default: [] },
   dateEvent: { type: Date }
+}, { 
+  timestamps: true 
 });
 
 export const News = mongoose.model<NewsDoc>('News', NewsSchema);
