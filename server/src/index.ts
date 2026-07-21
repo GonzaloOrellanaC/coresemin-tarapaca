@@ -46,6 +46,7 @@ const Server = () => {
         imgSrc: [
           "'self'",
           'data:',
+          'blob:',
           'https://coresemintarapaca.cl', 
           'https://www.coresemintarapaca.cl',
           "https://coresemin-tarapaca.omtecnologia.cl"
@@ -81,8 +82,8 @@ const Server = () => {
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
   }));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   app.use('/uploads',
     (req, res, next) => {
