@@ -7,7 +7,6 @@ import helmet from 'helmet';
 import path from 'path';
 import fs from 'fs';
 import { PORT } from './config';
-import { connectDB } from './db';
 import newsRouter from './routes/news';
 import authRouter from './routes/auth';
 import sitemapRouter from './routes/sitemap';
@@ -17,10 +16,10 @@ import redirects from './middleware/redirects';
 
 const Server = () => {
   const app = express();
+  const origin = ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl', 'http://localhost:4000', 'http://localhost:4173']
   // Configure helmet with a Content Security Policy that allows the
   // specific inline script hash and trusted script/style sources.
   app.use(helmet({
-    // Disable COEP so external CDNs (Tailwind CDN) are not blocked by embedder policies
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     contentSecurityPolicy: {
@@ -90,12 +89,22 @@ const Server = () => {
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       next();
     },
-    cors({ origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl'], credentials: true }),
+    cors({ origin, credentials: true }),
     express.static(path.join(process.cwd(), 'uploads'))
+  );
+
+  app.use('/public',
+    (req, res, next) => {
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      next();
+    },
+    cors({ origin, credentials: true }),
+    express.static(path.join(process.cwd(), 'public'))
   );
   // Serve public images folder (all subfolders and files) as static.
   // Use __dirname so path works when server process cwd is the server folder.
-  const imagesDir = path.join(__dirname, '..', 'app', 'public', 'images');
+  const imagesDir = path.join(__dirname, '..', '..', 'public', 'images');
+  console.log(imagesDir)
   if (!fs.existsSync(imagesDir)) {
     console.warn('Warning: images directory not found at', imagesDir);
   } else {
@@ -106,7 +115,7 @@ const Server = () => {
       res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
       next();
     },
-    cors({ origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl'], credentials: true }),
+    cors({ origin, credentials: true }),
     express.static(imagesDir)
   );
 
@@ -116,7 +125,7 @@ const Server = () => {
   const server = http.createServer(app);
   const io = new IOServer(server, {
     cors: {
-      origin: ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl', 'https://coresemin-tarapaca.omtecnologia.cl', 'https://web.coresemintarapaca.cl', 'http://localhost:4173'],
+      origin,
       methods: ['GET', 'POST'],
       credentials: true,
     },
@@ -153,9 +162,6 @@ const Server = () => {
 
   async function start() {
     console.log('Starting server in mode:', process.env.SERVER_MODE);
-    if (process.env.SERVER_MODE === 'server') {
-      await connectDB();
-    }
     server.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });

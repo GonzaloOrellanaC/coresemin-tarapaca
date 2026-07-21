@@ -2,9 +2,9 @@ import { Router } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { News } from '../models/News';
 import { authenticate } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
+import { getDb, NewsItem } from '../db/database';
 
 const router = Router();
 
@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     const title = req.body.title || 'temp';
     const slug = slugify(title);
     // Path relative to server/src/routes/news.ts: ../../../app/public/images/slug
-    const dir = path.join(process.cwd(), 'app', 'public', 'images', slug);
+    const dir = path.join(process.cwd(), 'public', 'images', slug);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
@@ -36,25 +36,24 @@ const uploadFields = upload.fields([
 
 // List all news
 router.get('/', async (req, res) => {
-  const list = await News.find().sort({ publishDate: -1 }).lean();
-  const formatted = list.map(item => ({
-    ...item,
-    id: (item as any)._id.toString()
-  }));
-  res.json(formatted);
+  const db = await getDb();
+  console.log(db)
+  const list = [...db.data.news].sort((a, b) => {
+    const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
+    const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
+    return dateB - dateA; // descending
+  });
+  res.json(list);
 });
 
 // Get by slug
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
-  const item = await News.findOne({ slug }).lean();
+  const db = await getDb();
+  const item = db.data.news.find(n => n.slug === slug);
   if (!item) return res.status(404).json({ message: 'Not found' });
   
-  const formatted = {
-    ...item,
-    id: (item as any)._id.toString()
-  };
-  res.json(formatted);
+  res.json(item);
 });
 
 // Create news (protected)
@@ -64,7 +63,9 @@ router.post('/', authenticate, upload.any(), async (req, res) => {
 
   if (!data.title || !data.category) return res.status(400).json({ message: 'title and category required' });
   const slug = slugify(data.title);
-  const exists = await News.findOne({ slug });
+  
+  const db = await getDb();
+  const exists = db.data.news.find((n: NewsItem) => n.slug === slug);
   if (exists) return res.status(409).json({ message: 'slug already exists' });
 
   const coverImageFile = files?.find(f => f.fieldname === 'coverImage');
@@ -77,24 +78,28 @@ router.post('/', authenticate, upload.any(), async (req, res) => {
     if (block.type === 'image') {
       const file = files?.find(f => f.fieldname === `block_image_${block.id}`);
       if (file) {
-        return { ...block, content: `/images/${slug}/${file.filename}` };
+        return { ...block, content: `/public/images/${slug}/${file.filename}` };
       }
     }
     return block;
   });
 
-  const doc = new News({
+  const doc: NewsItem = {
+    id: Date.now().toString(),
     slug,
     title: data.title,
     subtitle: data.subtitle,
-    coverImage: coverImageFile ? `/images/${slug}/${coverImageFile.filename}` : data.coverImage,
-    gallery: galleryFiles.map(f => `/images/${slug}/${f.filename}`),
+    coverImage: coverImageFile ? `/public/images/${slug}/${coverImageFile.filename}` : data.coverImage,
+    gallery: galleryFiles.map(f => `/public/images/${slug}/${f.filename}`),
     author: data.author || 'Admin',
-    publishDate: data.publishDate ? new Date(data.publishDate) : new Date(),
+    publishDate: data.publishDate ? new Date(data.publishDate).toISOString() : new Date().toISOString(),
     category: data.category,
     blocks
-  });
-  await doc.save();
+  };
+  
+  db.data.news.push(doc);
+  await db.write();
+
   // emit via socket.io if available
   const io = req.app.get('io');
   if (io) io.emit('newsCreated', doc);
@@ -111,15 +116,18 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
     return res.status(400).json({ message: 'Invalid ID provided' });
   }
 
-  const item = await News.findById(id);
-  if (!item) return res.status(404).json({ message: 'Not found' });
+  const db = await getDb();
+  const index = db.data.news.findIndex(n => n.id === id);
+  if (index === -1) return res.status(404).json({ message: 'Not found' });
+
+  const item = db.data.news[index];
 
   const slug = data.title ? slugify(data.title) : item.slug;
   
   item.title = data.title || item.title;
   item.subtitle = data.subtitle !== undefined ? data.subtitle : item.subtitle;
   item.category = data.category || item.category;
-  item.publishDate = data.publishDate ? new Date(data.publishDate) : item.publishDate;
+  item.publishDate = data.publishDate ? new Date(data.publishDate).toISOString() : item.publishDate;
   
   let blocks = data.blocks ? JSON.parse(data.blocks) : item.blocks;
   
@@ -128,7 +136,7 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
     if (block.type === 'image') {
       const file = files?.find(f => f.fieldname === `block_image_${block.id}`);
       if (file) {
-        return { ...block, content: `/images/${slug}/${file.filename}` };
+        return { ...block, content: `/public/images/${slug}/${file.filename}` };
       }
     }
     return block;
@@ -140,18 +148,19 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
   const galleryFiles = files?.filter(f => f.fieldname === 'gallery') || [];
 
   if (coverImageFile) {
-    item.coverImage = `/images/${slug}/${coverImageFile.filename}`;
+    item.coverImage = `/public/images/${slug}/${coverImageFile.filename}`;
   } else if (data.coverImageUrl) {
     item.coverImage = data.coverImageUrl;
   }
 
   // Handle gallery: if existingGallery is provided, use it as baseline
   let currentGallery = data.existingGallery ? JSON.parse(data.existingGallery) : (item.gallery || []);
-  const newGalleryPaths = galleryFiles.map(f => `/images/${slug}/${f.filename}`);
+  const newGalleryPaths = galleryFiles.map(f => `/public/images/${slug}/${f.filename}`);
   item.gallery = [...currentGallery, ...newGalleryPaths];
 
   item.slug = slug;
-  await item.save();
+  
+  await db.write();
 
   const io = req.app.get('io');
   if (io) io.emit('newsUpdated', item);
@@ -161,11 +170,16 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
 // Delete news (protected)
 router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
-  const item = await News.findByIdAndDelete(id);
-  if (!item) return res.status(404).json({ message: 'Not found' });
   
+  const db = await getDb();
+  const index = db.data.news.findIndex(n => n.id === id);
+  if (index === -1) return res.status(404).json({ message: 'Not found' });
+  
+  db.data.news.splice(index, 1);
+  await db.write();
+
   // Optional: Delete images folder
-  // const dir = path.join(process.cwd(), 'app', 'public', 'images', item.slug);
+  // const dir = path.join(process.cwd(), 'public', 'images', item.slug);
   // if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true, force: true });
 
   const io = req.app.get('io');

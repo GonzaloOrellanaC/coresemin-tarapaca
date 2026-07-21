@@ -15,7 +15,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "start:pm2": "pm2 start npm --name coresemin -- run dev",
-    "start": "node server/index.js"
+    "start": "node server/index.js",
+    "postinstall": "npm run build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -35,6 +36,7 @@
     "uuid": "^13.0.0"
   },
   "devDependencies": {
+    "@types/dompurify": "^3.0.5",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
     "concurrently": "^8.2.0",

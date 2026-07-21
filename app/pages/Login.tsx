@@ -4,7 +4,7 @@ import { CORE_COLOR } from '../constants';
 import { login } from '../services/dataService';
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
@@ -16,13 +16,13 @@ const Login: React.FC = () => {
     e.preventDefault();
     setError(null);
     // TODO: replace with real authentication against backend.
-    if (!email || !password) {
-      setError('Ingrese correo y contraseña');
+    if (!username || !password) {
+      setError('Ingrese usuario y contraseña');
       return;
     }
 
     try {
-      const token = await login(email, password);
+      const token = await login(username, password);
       localStorage.setItem('auth_token', token);
       navigate(from, { replace: true });
     } catch (err) {
@@ -34,12 +34,12 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full bg-white p-8 rounded-xl shadow">
         <h2 className="text-2xl font-bold mb-2">Iniciar sesión</h2>
-        <p className="text-sm text-gray-500 mb-6">Accede con tu correo y contraseña para ingresar al área de administración.</p>
+        <p className="text-sm text-gray-500 mb-6">Accede con tu usuario y contraseña para ingresar al área de administración.</p>
         {error && <div className="text-sm text-red-600 mb-4">{error}</div>}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Correo</label>
-            <input value={email} onChange={e => setEmail(e.target.value)} type="email" className="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500" />
+            <label className="block text-sm font-medium text-gray-700">Usuario</label>
+            <input value={username} onChange={e => setUsername(e.target.value)} type="text" className="mt-1 block w-full rounded-md border-gray-200 shadow-sm focus:border-green-500 focus:ring-green-500" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">Contraseña</label>

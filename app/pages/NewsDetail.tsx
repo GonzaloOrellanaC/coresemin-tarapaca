@@ -19,8 +19,10 @@ const NewsDetail: React.FC = () => {
   const base = apiBase.replace(/\/(?:api\/?)?$/i, '')
 
   useEffect(() => {
-    if (article?.coverImage) {
+    if (article && article.coverImage) {
       setImageBanner((article.coverImage as string).includes('http') ? article.coverImage : `${base}${article.coverImage}`);
+    } else {
+        setImageBanner(`${apiBase}/public/CORESEMIN-LOGO.png`)
     }
   }, [article, base]);
 
@@ -110,7 +112,11 @@ const NewsDetail: React.FC = () => {
             </script>
         {/* Header Image */}
         <div className="w-full h-[400px] md:h-[500px] relative">
-            <img src={imageBanner} alt={article.title} className="w-full h-full object-cover" />
+            <img 
+                src={imageBanner && (imageBanner.startsWith('http') || imageBanner.startsWith('blob:')) ? imageBanner : (imageBanner ? `${base}${imageBanner}` : '')} 
+                alt={article.title} 
+                className="w-full h-full object-cover" 
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-80"></div>
             <div className="absolute bottom-0 left-0 right-0 p-4 md:p-10 max-w-4xl mx-auto">
                 <span className="inline-block px-3 py-1 rounded bg-green-600 text-white text-xs font-bold uppercase tracking-wide mb-3">{article.category}</span>
@@ -137,10 +143,11 @@ const NewsDetail: React.FC = () => {
                             </div>
                         );
                     } else if (block.type === 'image') {
+                        const imgSrc = block.content.startsWith('http') || block.content.startsWith('blob:') ? block.content : `${base}${block.content}`;
                         return (
                             <figure key={block.id} className={`my-8 flex justify-center ${block.styles?.width === 'half' ? 'md:w-1/2 md:float-left md:mr-6' : 'w-full'}`}>
                                 <img 
-                                    src={block.content} 
+                                    src={imgSrc} 
                                     alt="Contenido articulo" 
                                     className="rounded-xl shadow-lg object-contain"
                                     style={{ maxHeight: '200px' }}
@@ -149,10 +156,11 @@ const NewsDetail: React.FC = () => {
                             </figure>
                         );
                     } else if (block.type === 'link') {
+                        const linkHref = block.content.startsWith('http') ? block.content : `${base}${block.content}`;
                         return (
                             <div key={block.id} className="my-8 flex justify-center">
                                 <a 
-                                    href={block.content} 
+                                    href={linkHref} 
                                     target="_blank" 
                                     rel="noopener noreferrer"
                                     className="px-8 py-4 bg-green-600 text-white font-bold rounded-xl shadow-lg hover:bg-green-700 transition-all transform hover:-translate-y-1 inline-flex items-center gap-2"
