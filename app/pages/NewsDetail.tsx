@@ -44,30 +44,40 @@ const NewsDetail: React.FC = () => {
     useEffect(() => {
         if (!article) return;
         const title = `${article.title} - Coresemin Tarapacá`;
-        const desc = article.subtitle || article.blocks?.find(b => b.type === 'text')?.content?.slice(0, 160) || '';
+        const rawDesc = article.subtitle || article.blocks?.find(b => b.type === 'text')?.content || '';
+        const desc = rawDesc.replace(/<[^>]*>/g, '').trim().slice(0, 200);
         document.title = title;
 
-        // description
-        let md = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
-        if (!md) { md = document.createElement('meta'); md.name = 'description'; document.head.appendChild(md); }
-        md.content = desc;
+        const origin = window.location.origin.replace(/\/$/, '');
+        let coverUrl = article.coverImage || '/public/CORESEMIN-LOGO.png';
+        if (!coverUrl.startsWith('http')) {
+          coverUrl = `${origin}${coverUrl.startsWith('/') ? '' : '/'}${coverUrl}`;
+        }
+        const currentUrl = window.location.href;
 
-        // Open Graph
-        let og = document.querySelector('meta[property="og:title"]') as HTMLMetaElement | null;
-        if (!og) { og = document.createElement('meta'); og.setAttribute('property','og:title'); document.head.appendChild(og); }
-        og.content = title;
+        const setMeta = (attr: string, key: string, content: string) => {
+          let tag = document.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
+          if (!tag) {
+            tag = document.createElement('meta');
+            tag.setAttribute(attr, key);
+            document.head.appendChild(tag);
+          }
+          tag.content = content;
+        };
 
-        let ogDesc = document.querySelector('meta[property="og:description"]') as HTMLMetaElement | null;
-        if (!ogDesc) { ogDesc = document.createElement('meta'); ogDesc.setAttribute('property','og:description'); document.head.appendChild(ogDesc); }
-        ogDesc.content = desc;
+        setMeta('name', 'description', desc);
+        setMeta('property', 'og:type', 'article');
+        setMeta('property', 'og:site_name', 'Coresemin Tarapacá');
+        setMeta('property', 'og:title', title);
+        setMeta('property', 'og:description', desc);
+        setMeta('property', 'og:image', coverUrl);
+        setMeta('property', 'og:image:secure_url', coverUrl);
+        setMeta('property', 'og:url', currentUrl);
 
-        let ogImage = document.querySelector('meta[property="og:image"]') as HTMLMetaElement | null;
-        if (!ogImage) { ogImage = document.createElement('meta'); ogImage.setAttribute('property','og:image'); document.head.appendChild(ogImage); }
-        ogImage.content = article.coverImage || '';
-
-        let tw = document.querySelector('meta[name="twitter:card"]') as HTMLMetaElement | null;
-        if (!tw) { tw = document.createElement('meta'); tw.setAttribute('name','twitter:card'); document.head.appendChild(tw); }
-        tw.content = 'summary_large_image';
+        setMeta('name', 'twitter:card', 'summary_large_image');
+        setMeta('name', 'twitter:title', title);
+        setMeta('name', 'twitter:description', desc);
+        setMeta('name', 'twitter:image', coverUrl);
 
     }, [article]);
 
