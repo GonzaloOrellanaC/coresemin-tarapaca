@@ -19,7 +19,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, featured = false }) => {
   return (
     <div className={`group bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col ${featured ? 'md:col-span-2 md:flex-row' : 'h-full'}`}>
       <div className={`relative overflow-hidden ${featured ? 'md:w-2/3 h-64 md:h-auto' : 'h-48'}`}>
-        <img
+        {coverSrc && <img
           src={coverSrc}
           alt={article.title}
           style={{ maxHeight: 500 }}
