@@ -8,7 +8,9 @@
     "build": "tsc -p .",
     "start": "node dist/index.js",
     "pm2:start:ts": "pm2 start index.js --name coresemin-server",
-    "create-zip": "node scripts/create-zip.js"
+    "create-zip": "node scripts/create-zip.js",
+    "deploy": "bash deploy.sh",
+    "deploy:win": "powershell -ExecutionPolicy Bypass -File deploy.ps1"
   },
   "dependencies": {
     "app": "^0.1.0",

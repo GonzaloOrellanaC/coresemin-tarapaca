@@ -1,0 +1,6 @@
+# Normaliza saltos de línea para evitar problemas en servidores Linux
+* text=auto
+
+# Los scripts bash SIEMPRE deben salir con LF (CRLF rompe bash en Ubuntu)
+*.sh text eol=lf
+*.ps1 text eol=lf
