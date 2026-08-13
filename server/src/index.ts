@@ -6,7 +6,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import path from 'path';
 import fs from 'fs';
-import { PORT } from './config';
+import { PORT, CORS_ORIGINS } from './config';
 import newsRouter from './routes/news';
 import authRouter from './routes/auth';
 import sitemapRouter from './routes/sitemap';
@@ -18,7 +18,9 @@ import { News } from './models/News';
 
 const Server = () => {
   const app = express();
-  const origin = ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl', 'http://localhost:4000', 'http://localhost:4173']
+  // Base origins (defaults) merged with extra origins from .env (CORS_ORIGINS, comma-separated)
+  const defaultOrigins = ['https://coresemintarapaca.cl', 'https://www.coresemintarapaca.cl', 'http://localhost:4000', 'http://localhost:4173'];
+  const origin = [...new Set([...defaultOrigins, ...CORS_ORIGINS])];
   // Configure helmet with a Content Security Policy that allows the
   // specific inline script hash and trusted script/style sources.
   app.use(helmet({
@@ -65,12 +67,9 @@ const Server = () => {
     },
   }));
 
-  // Allow CORS from the frontend dev server, the production domain and the Tailwind CDN
+  // Allow CORS from the frontend dev server, the production domain, the Tailwind CDN and extra origins from .env
   const allowedOrigins = [
-    'http://localhost:4000',
-    'http://localhost:4173',
-    'https://coresemintarapaca.cl',
-    'https://www.coresemintarapaca.cl',
+    ...origin,
     'https://cdn.tailwindcss.com',
     "https://coresemin-tarapaca.omtecnologia.cl"
   ];
