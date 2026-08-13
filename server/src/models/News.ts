@@ -41,7 +41,8 @@ const NewsSchema = new Schema<NewsDoc>({
   gallery: { type: [String], default: [] },
   dateEvent: { type: Date }
 }, { 
-  timestamps: true 
+  timestamps: true,
+  toJSON: { virtuals: true }
 });
 
 export const News = mongoose.model<NewsDoc>('News', NewsSchema);

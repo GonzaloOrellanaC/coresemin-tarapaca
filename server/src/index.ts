@@ -12,7 +12,8 @@ import authRouter from './routes/auth';
 import sitemapRouter from './routes/sitemap';
 import robotsRouter from './routes/robots';
 import redirects from './middleware/redirects';
-import { getDb } from './db/database';
+import { connectDB } from './db/connection';
+import { News } from './models/News';
 
 
 const Server = () => {
@@ -146,8 +147,7 @@ const Server = () => {
   // Handle SEO meta tags for noticia/:slug requests (WhatsApp, Facebook, X, LinkedIn, etc.)
   const handleNewsSeo = async (req: express.Request, res: express.Response, slug: string) => {
     try {
-      const db = await getDb();
-      const article = db.data.news.find(n => n.slug === slug);
+      const article = await News.findOne({ slug });
       
       const staticPath = path.join(process.cwd(), 'app', 'dist');
       const devIndexPath = path.join(process.cwd(), 'app', 'index.html');
@@ -235,6 +235,7 @@ const Server = () => {
 
   async function start() {
     console.log('Starting server in mode:', process.env.SERVER_MODE);
+    await connectDB();
     server.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
