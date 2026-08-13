@@ -1,56 +1,35 @@
 import { Router } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
 import { authenticate } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
-import { getDb, NewsItem } from '../db/database';
+import { News } from '../models/News';
+import { uploadToCloudStorage } from '../services/cloudStorage';
 
 const router = Router();
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const title = req.body.title || 'temp';
-    const slug = slugify(title);
-    // Path relative to server/src/routes/news.ts: ../../../app/public/images/slug
-    const dir = path.join(process.cwd(), 'public', 'images', slug);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    // Preserve original extension but could normalize name
-    const ext = path.extname(file.originalname);
-    const name = path.basename(file.originalname, ext);
-    cb(null, `${slugify(name)}${ext}`);
-  }
+// Los archivos se cargan en memoria y se suben a OM Cloud Storage
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 20 * 1024 * 1024 } // 20MB por archivo
 });
 
-const upload = multer({ storage });
-
-const uploadFields = upload.fields([
-  { name: 'coverImage', maxCount: 1 },
-  { name: 'gallery', maxCount: 30 }
-]);
+// Sube un archivo recibido (en memoria) a OM Cloud Storage y devuelve la
+// URL pública que se guardará en la base de datos.
+async function uploadFileToCloud(file: Express.Multer.File, virtualPath: string): Promise<string> {
+  const cloud = await uploadToCloudStorage(file, virtualPath);
+  return cloud.publicUrl;
+}
 
 // List all news
 router.get('/', async (req, res) => {
-  const db = await getDb();
-  console.log(db)
-  const list = [...db.data.news].sort((a, b) => {
-    const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
-    const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
-    return dateB - dateA; // descending
-  });
+  const list = await News.find().sort({ publishDate: -1 });
   res.json(list);
 });
 
 // Get by slug
 router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
-  const db = await getDb();
-  const item = db.data.news.find(n => n.slug === slug);
+  const item = await News.findOne({ slug });
   if (!item) return res.status(404).json({ message: 'Not found' });
   
   res.json(item);
@@ -64,46 +43,61 @@ router.post('/', authenticate, upload.any(), async (req, res) => {
   if (!data.title || !data.category) return res.status(400).json({ message: 'title and category required' });
   const slug = slugify(data.title);
   
-  const db = await getDb();
-  const exists = db.data.news.find((n: NewsItem) => n.slug === slug);
+  const exists = await News.findOne({ slug });
   if (exists) return res.status(409).json({ message: 'slug already exists' });
 
   const coverImageFile = files?.find(f => f.fieldname === 'coverImage');
   const galleryFiles = files?.filter(f => f.fieldname === 'gallery') || [];
-  
-  let blocks = data.blocks ? JSON.parse(data.blocks) : [];
-  
-  // Process block images
-  blocks = blocks.map((block: any) => {
-    if (block.type === 'image') {
-      const file = files?.find(f => f.fieldname === `block_image_${block.id}`);
-      if (file) {
-        return { ...block, content: `/public/images/${slug}/${file.filename}` };
-      }
+
+  const virtualPath = `/noticias/${slug}/`;
+
+  try {
+    // Portada
+    let coverImage = data.coverImage;
+    if (coverImageFile) {
+      coverImage = await uploadFileToCloud(coverImageFile, virtualPath);
     }
-    return block;
-  });
 
-  const doc: NewsItem = {
-    id: Date.now().toString(),
-    slug,
-    title: data.title,
-    subtitle: data.subtitle,
-    coverImage: coverImageFile ? `/public/images/${slug}/${coverImageFile.filename}` : data.coverImage,
-    gallery: galleryFiles.map(f => `/public/images/${slug}/${f.filename}`),
-    author: data.author || 'Admin',
-    publishDate: data.publishDate ? new Date(data.publishDate).toISOString() : new Date().toISOString(),
-    category: data.category,
-    blocks
-  };
-  
-  db.data.news.push(doc);
-  await db.write();
+    // Galería
+    const gallery: string[] = [];
+    for (const f of galleryFiles) {
+      gallery.push(await uploadFileToCloud(f, virtualPath));
+    }
 
-  // emit via socket.io if available
-  const io = req.app.get('io');
-  if (io) io.emit('newsCreated', doc);
-  res.status(201).json(doc);
+    // Bloques con imagen
+    let blocks = data.blocks ? JSON.parse(data.blocks) : [];
+    blocks = await Promise.all(blocks.map(async (block: any) => {
+      if (block.type === 'image') {
+        const file = files?.find(f => f.fieldname === `block_image_${block.id}`);
+        if (file) {
+          const url = await uploadFileToCloud(file, virtualPath);
+          return { ...block, content: url };
+        }
+      }
+      return block;
+    }));
+
+    const doc = {
+      slug,
+      title: data.title,
+      subtitle: data.subtitle,
+      coverImage,
+      gallery,
+      author: data.author || 'Admin',
+      publishDate: data.publishDate ? new Date(data.publishDate) : new Date(),
+      category: data.category,
+      blocks
+    };
+
+    const created = await News.create(doc);
+
+    // emit via socket.io if available
+    const io = req.app.get('io');
+    if (io) io.emit('newsCreated', created);
+    return res.status(201).json(created);
+  } catch (err: any) {
+    return res.status(502).json({ message: `Error al subir archivos a OM Cloud Storage: ${err?.message || err}` });
+  }
 });
 
 // Update news (protected)
@@ -116,51 +110,56 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
     return res.status(400).json({ message: 'Invalid ID provided' });
   }
 
-  const db = await getDb();
-  const index = db.data.news.findIndex(n => n.id === id);
-  if (index === -1) return res.status(404).json({ message: 'Not found' });
-
-  const item = db.data.news[index];
+  const item = await News.findById(id);
+  if (!item) return res.status(404).json({ message: 'Not found' });
 
   const slug = data.title ? slugify(data.title) : item.slug;
-  
+  const virtualPath = `/noticias/${slug}/`;
+
   item.title = data.title || item.title;
   item.subtitle = data.subtitle !== undefined ? data.subtitle : item.subtitle;
   item.category = data.category || item.category;
-  item.publishDate = data.publishDate ? new Date(data.publishDate).toISOString() : item.publishDate;
-  
-  let blocks = data.blocks ? JSON.parse(data.blocks) : item.blocks;
-  
-  // Process block images
-  blocks = blocks.map((block: any) => {
-    if (block.type === 'image') {
-      const file = files?.find(f => f.fieldname === `block_image_${block.id}`);
-      if (file) {
-        return { ...block, content: `/public/images/${slug}/${file.filename}` };
-      }
-    }
-    return block;
-  });
-  
-  item.blocks = blocks;
-  
+  item.publishDate = data.publishDate ? new Date(data.publishDate) : item.publishDate;
+
   const coverImageFile = files?.find(f => f.fieldname === 'coverImage');
   const galleryFiles = files?.filter(f => f.fieldname === 'gallery') || [];
 
-  if (coverImageFile) {
-    item.coverImage = `/public/images/${slug}/${coverImageFile.filename}`;
-  } else if (data.coverImageUrl) {
-    item.coverImage = data.coverImageUrl;
-  }
+  try {
+    // Portada: si viene un archivo nuevo se sube al storage
+    if (coverImageFile) {
+      item.coverImage = await uploadFileToCloud(coverImageFile, virtualPath);
+    } else if (data.coverImageUrl) {
+      item.coverImage = data.coverImageUrl;
+    }
 
-  // Handle gallery: if existingGallery is provided, use it as baseline
-  let currentGallery = data.existingGallery ? JSON.parse(data.existingGallery) : (item.gallery || []);
-  const newGalleryPaths = galleryFiles.map(f => `/public/images/${slug}/${f.filename}`);
-  item.gallery = [...currentGallery, ...newGalleryPaths];
+    // Galería: conserva las existentes y sube las nuevas al storage
+    let currentGallery = data.existingGallery ? JSON.parse(data.existingGallery) : (item.gallery || []);
+    const newGalleryPaths: string[] = [];
+    for (const f of galleryFiles) {
+      newGalleryPaths.push(await uploadFileToCloud(f, virtualPath));
+    }
+    item.gallery = [...currentGallery, ...newGalleryPaths];
+
+    // Bloques con imagen
+    let blocks = data.blocks ? JSON.parse(data.blocks) : item.blocks;
+    blocks = await Promise.all(blocks.map(async (block: any) => {
+      if (block.type === 'image') {
+        const file = files?.find(f => f.fieldname === `block_image_${block.id}`);
+        if (file) {
+          const url = await uploadFileToCloud(file, virtualPath);
+          return { ...block, content: url };
+        }
+      }
+      return block;
+    }));
+    item.blocks = blocks;
+  } catch (err: any) {
+    return res.status(502).json({ message: `Error al subir archivos a OM Cloud Storage: ${err?.message || err}` });
+  }
 
   item.slug = slug;
   
-  await db.write();
+  await item.save();
 
   const io = req.app.get('io');
   if (io) io.emit('newsUpdated', item);
@@ -171,12 +170,8 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
 router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
   
-  const db = await getDb();
-  const index = db.data.news.findIndex(n => n.id === id);
-  if (index === -1) return res.status(404).json({ message: 'Not found' });
-  
-  db.data.news.splice(index, 1);
-  await db.write();
+  const item = await News.findByIdAndDelete(id);
+  if (!item) return res.status(404).json({ message: 'Not found' });
 
   // Optional: Delete images folder
   // const dir = path.join(process.cwd(), 'public', 'images', item.slug);

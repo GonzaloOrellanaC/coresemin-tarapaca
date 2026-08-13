@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { getDb } from '../db/database';
+import { News } from '../models/News';
 
 const router = Router();
 
@@ -9,12 +9,7 @@ router.get('/sitemap.xml', async (req, res) => {
     const host = req.protocol + '://' + req.get('host');
     const baseUrl = process.env.FRONTEND_URL || host; // allow override
     
-    const db = await getDb();
-    const items = [...db.data.news].sort((a, b) => {
-      const dateA = a.publishDate ? new Date(a.publishDate).getTime() : 0;
-      const dateB = b.publishDate ? new Date(b.publishDate).getTime() : 0;
-      return dateB - dateA;
-    });
+    const items = await News.find().sort({ publishDate: -1 });
 
     const urls = items.map((it) => {
       const loc = `${baseUrl.replace(/\/$/, '')}/noticia/${it.slug}`;
