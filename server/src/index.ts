@@ -53,7 +53,8 @@ const Server = () => {
           'blob:',
           'https://coresemintarapaca.cl', 
           'https://www.coresemintarapaca.cl',
-          "https://coresemin-tarapaca.omtecnologia.cl"
+          "https://coresemin-tarapaca.omtecnologia.cl",
+          'https://omcloudstorage.omtecnologia.cl'
         ],
         styleSrc: [
           "'self'",
