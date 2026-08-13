@@ -7,7 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only server/index.ts",
     "build": "tsc -p .",
     "start": "node dist/index.js",
-    "pm2:start:ts": "pm2 start index.js --name coresemin-server",
+    "pm2:start:ts": "pm2 start dist/index.js --name coresemin-server",
     "create-zip": "node scripts/create-zip.js"
   },
   "dependencies": {
