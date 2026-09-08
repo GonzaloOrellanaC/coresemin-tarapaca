@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Commit and push to GitHub",
+			"type": "shell",
+			"command": "git -C \"c:\\Users\\gorel\\Documents\\OM-Tecnologia\\coresemin-tarapaca\\web\\coresemin-tarapaca\" commit -m \"feat: migrar BD a MongoDB y archivos a OM Cloud Storage\"; Write-Output '---PUSH---'; git -C \"c:\\Users\\gorel\\Documents\\OM-Tecnologia\\coresemin-tarapaca\\web\\coresemin-tarapaca\" push origin main",
+			"problemMatcher": []
+		},
+		{
+			"label": "Commit and push (fixed quoting)",
+			"type": "shell",
+			"command": "git -C \"c:\\Users\\gorel\\Documents\\OM-Tecnologia\\coresemin-tarapaca\\web\\coresemin-tarapaca\" commit -m 'feat: migrar BD a MongoDB y archivos a OM Cloud Storage'; Write-Output '---PUSH---'; git -C \"c:\\Users\\gorel\\Documents\\OM-Tecnologia\\coresemin-tarapaca\\web\\coresemin-tarapaca\" push origin main",
+			"problemMatcher": []
+		}
+	]
+}

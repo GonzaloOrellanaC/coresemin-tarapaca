@@ -9,6 +9,7 @@ import fs from 'fs';
 import { PORT, CORS_ORIGINS } from './config';
 import newsRouter from './routes/news';
 import authRouter from './routes/auth';
+import miningActivitiesRouter from './routes/miningActivities';
 import sitemapRouter from './routes/sitemap';
 import robotsRouter from './routes/robots';
 import redirects from './middleware/redirects';
@@ -43,7 +44,7 @@ const Server = () => {
           "'self'",
           'http://localhost:4173',
           'http://localhost:4000',
-          'https://coresemintarapaca.cl', 
+          'https://coresemintarapaca.cl',
           'https://www.coresemintarapaca.cl',
           "https://coresemin-tarapaca.omtecnologia.cl"
         ],
@@ -51,7 +52,7 @@ const Server = () => {
           "'self'",
           'data:',
           'blob:',
-          'https://coresemintarapaca.cl', 
+          'https://coresemintarapaca.cl',
           'https://www.coresemintarapaca.cl',
           "https://coresemin-tarapaca.omtecnologia.cl",
           'https://omcloudstorage.omtecnologia.cl'
@@ -140,6 +141,7 @@ const Server = () => {
   });
 
   app.use('/api/news', newsRouter);
+  app.use('/api/mining-activities', miningActivitiesRouter);
   app.use('/api/auth', authRouter);
   app.use('/', sitemapRouter);
   app.use('/', robotsRouter);
@@ -148,7 +150,7 @@ const Server = () => {
   const handleNewsSeo = async (req: express.Request, res: express.Response, slug: string) => {
     try {
       const article = await News.findOne({ slug });
-      
+
       const staticPath = path.join(process.cwd(), 'app', 'dist');
       const devIndexPath = path.join(process.cwd(), 'app', 'index.html');
       const indexPath = fs.existsSync(path.join(staticPath, 'index.html')) ? path.join(staticPath, 'index.html') : devIndexPath;

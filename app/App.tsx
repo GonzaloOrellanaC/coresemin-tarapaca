@@ -11,10 +11,13 @@ import PresenciaRegional from './pages/PresenciaRegional';
 import Admin from './pages/Admin';
 import AdminEdit from './pages/AdminEdit';
 import AdminDashboard from './pages/AdminDashboard';
+import AdminMiningActivities from './pages/AdminMiningActivities';
+import AdminMiningActivityForm from './pages/AdminMiningActivityForm';
 import Login from './pages/Login';
 import ProtectedRoute from './components/ProtectedRoute';
 import Blogs from './pages/Blogs';
 import Contact from './pages/Contact';
+import MiningActivitiesList from './pages/MiningActivitiesList';
 
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -41,10 +44,26 @@ const App: React.FC = () => {
             <Route path="/eventos" element={<Events />} />
             <Route path="/presencia-regional" element={<PresenciaRegional />} />
             <Route path="/blogs" element={<Blogs />} />
+            <Route path="/actividad-minera" element={<MiningActivitiesList />} />
             <Route path="/contacto" element={<Contact />} />
             <Route path="/admin" element={
               <ProtectedRoute>
                 <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/mining-activities" element={
+              <ProtectedRoute>
+                <AdminMiningActivities />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/mining-activities/create" element={
+              <ProtectedRoute>
+                <AdminMiningActivityForm />
+              </ProtectedRoute>
+            } />
+            <Route path="/admin/mining-activities/edit/:id" element={
+              <ProtectedRoute>
+                <AdminMiningActivityForm />
               </ProtectedRoute>
             } />
             <Route path="/admin/create" element={

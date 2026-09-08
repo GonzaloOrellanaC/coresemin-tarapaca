@@ -35,7 +35,7 @@ else
 fi
 # Reiniciar también el proceso de la app (modo dev) si existe
 if pm2 pid coresemin >/dev/null 2>&1; then
-  pm2 restart coresemin
+  pm2 restart coresemin-server
 fi
 pm2 save
 

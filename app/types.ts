@@ -48,3 +48,25 @@ export interface TeamMember {
   role: string;
   image: string;
 }
+
+export interface MiningActivityItem {
+  id?: string;
+  _id?: string;
+  title: string;
+  description: string;
+  url: string;
+  imageUrl?: string;
+  sourcePlatform?: string;
+  authorName?: string;
+  publishDate: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PaginatedMiningActivities {
+  items: MiningActivityItem[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

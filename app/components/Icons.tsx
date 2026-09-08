@@ -4,7 +4,7 @@ import {
   Settings, Plus, Trash2, Image as ImageIcon, Type, 
   Layout, Save, Search, ChevronRight, BarChart, TrendingUp,
   Activity, ShieldCheck, Award, Megaphone, Mail, Phone, Send, Check,
-  Eye, LogOut, Edit, ExternalLink, Info
+  Eye, LogOut, Edit, ExternalLink, Info, Globe, Loader2
 } from 'lucide-react';
 
 export const Icons = {
@@ -13,5 +13,5 @@ export const Icons = {
   Settings, Plus, Trash2, Image: ImageIcon, Type,
   Layout, Save, Search, ChevronRight, BarChart, TrendingUp,
   Activity, ShieldCheck, Award, Megaphone, Mail, Phone, Send, Check,
-  Eye, LogOut, Edit, ExternalLink, Info
+  Eye, LogOut, Edit, ExternalLink, Info, Globe, Loader2
 };
