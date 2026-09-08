@@ -70,8 +70,28 @@ const Footer: React.FC = () => {
           </div>
         </div>
         
-        <div className="border-t border-gray-800 mt-12 pt-8 text-center text-xs text-gray-500">
+        <div className="border-t border-gray-800 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-500">
           <p>&copy; {new Date().getFullYear()} Coresemin Tarapacá. Todos los derechos reservados.</p>
+          <p className="text-gray-400 text-center sm:text-right">
+            Desarrollado por{' '}
+            <a 
+              href="https://www.linkedin.com/in/gonzaloorellanac/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-300 hover:text-green-400 font-semibold transition-colors underline decoration-gray-600 hover:decoration-green-400"
+            >
+              Ingeniero Gonzalo Orellana
+            </a>
+            {' '}&bull;{' '}
+            <a 
+              href="https://omtecnologia.cl" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-gray-300 hover:text-green-400 font-semibold transition-colors underline decoration-gray-600 hover:decoration-green-400"
+            >
+              OM Tecnología
+            </a>
+          </p>
         </div>
       </div>
     </footer>
