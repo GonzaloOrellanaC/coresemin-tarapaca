@@ -15,7 +15,28 @@
     <meta name="twitter:description" content="Consejo Regional de Seguridad Minera Tarapacá — noticias, eventos y capacitación para promover la seguridad en la industria." />
     <meta name="twitter:image" content="https://coresemintarapaca.cl/public/CORESEMIN-LOGO.png" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brand: {
+                DEFAULT: '#028938',
+                50: '#f0fdf4',
+                100: '#dcfce7',
+                500: '#028938',
+                600: '#027a32',
+                700: '#02672b',
+                800: '#015323',
+                900: '#01451d',
+                950: '#00250e',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="icon" href="/CORESEMIN-LOGO.png" />
     <script type="application/ld+json">
       {"@context":"https://schema.org","@type":"Organization","name":"Coresemin Tarapacá","url":window?.location?.origin || "https://coresemintarapaca.cl","logo":"/CORESEMIN-LOGO.png"}

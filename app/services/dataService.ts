@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Article, EventItem } from '../types';
+import { Article, EventItem, MiningActivityItem, PaginatedMiningActivities } from '../types';
 
 const API_BASE = import.meta.env.VITE_SERVER_URL;
 
@@ -99,3 +99,45 @@ export const getEvents = async (): Promise<EventItem[]> => {
   const all = await getArticles();
   return (all.filter(a => a.category === 'Evento' || a.category === 'Capacitación') as unknown) as EventItem[];
 };
+
+export const getMiningActivities = async (limit: number = 20): Promise<MiningActivityItem[]> => {
+  const res = await api.get(`/mining-activities?limit=${limit}`);
+  return res.data || [];
+};
+
+export const getPaginatedMiningActivities = async (page: number = 1, limit: number = 10): Promise<PaginatedMiningActivities> => {
+  const res = await api.get(`/mining-activities?page=${page}&limit=${limit}&paginate=true`);
+  return res.data;
+};
+
+export const getMiningActivityById = async (id: string): Promise<MiningActivityItem | null> => {
+  try {
+    const res = await api.get(`/mining-activities/${id}`);
+    return res.data;
+  } catch {
+    return null;
+  }
+};
+
+export const previewMiningActivityLink = async (url: string, token?: string): Promise<MiningActivityItem> => {
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+  const res = await api.post('/mining-activities/preview', { url }, { headers });
+  return res.data;
+};
+
+export const createMiningActivity = async (item: Partial<MiningActivityItem>, token?: string): Promise<MiningActivityItem> => {
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+  const res = await api.post('/mining-activities', item, { headers });
+  return res.data;
+};
+
+export const updateMiningActivity = async (id: string, item: Partial<MiningActivityItem>, token?: string): Promise<MiningActivityItem> => {
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+  const res = await api.put(`/mining-activities/${id}`, item, { headers });
+  return res.data;
+};
+
+export const deleteMiningActivity = async (id: string, token?: string): Promise<void> => {
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+  await api.delete(`/mining-activities/${id}`, { headers });
+};

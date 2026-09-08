@@ -59,8 +59,8 @@ const AdminDashboard: React.FC = () => {
                     <Link to="/admin" className="flex items-center gap-3 p-3 rounded-lg bg-green-600/20 text-green-400 font-semibold">
                         <Icons.Layout className="w-5 h-5" /> Noticias
                     </Link>
-                    <Link to="/admin/events" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-400 transition-colors">
-                        <Icons.Calendar className="w-5 h-5" /> Eventos
+                    <Link to="/admin/mining-activities" className="flex items-center gap-3 p-3 rounded-lg hover:bg-white/5 text-gray-400 transition-colors">
+                        <Icons.Activity className="w-5 h-5" /> Actividad Minera
                     </Link>
                 </nav>
                 <div className="p-4 border-t border-gray-800">
