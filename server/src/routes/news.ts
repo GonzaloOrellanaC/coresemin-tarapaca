@@ -10,7 +10,7 @@ const router = Router();
 // Los archivos se cargan en memoria y se suben a OM Cloud Storage
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 } // 20MB por archivo
+  limits: { fileSize: 40 * 1024 * 1024 } // 40MB por archivo
 });
 
 // Sube un archivo recibido (en memoria) a OM Cloud Storage y devuelve la
@@ -31,7 +31,7 @@ router.get('/:slug', async (req, res) => {
   const { slug } = req.params;
   const item = await News.findOne({ slug });
   if (!item) return res.status(404).json({ message: 'Not found' });
-  
+
   res.json(item);
 });
 
@@ -42,7 +42,7 @@ router.post('/', authenticate, upload.any(), async (req, res) => {
 
   if (!data.title || !data.category) return res.status(400).json({ message: 'title and category required' });
   const slug = slugify(data.title);
-  
+
   const exists = await News.findOne({ slug });
   if (exists) return res.status(409).json({ message: 'slug already exists' });
 
@@ -158,7 +158,7 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
   }
 
   item.slug = slug;
-  
+
   await item.save();
 
   const io = req.app.get('io');
@@ -169,7 +169,7 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
 // Delete news (protected)
 router.delete('/:id', authenticate, async (req, res) => {
   const { id } = req.params;
-  
+
   const item = await News.findByIdAndDelete(id);
   if (!item) return res.status(404).json({ message: 'Not found' });
 
