@@ -42,13 +42,9 @@ export async function uploadMultipleImagesAndThumbnails(
         onItemProgress(i + 1, items.length, baseFileName);
       }
 
-      // 1. Subir original
-      const origName = `${baseFileName}.jpg`;
-      const origStream = Readable.from(buffer);
-      await client.uploadFrom(origStream, origName);
-
-      // 2. Generar versión thumbnail al 25% de sus dimensiones con Sharp (con tolerancia a fallos/metadatos corruptos)
+      // Preparar versión thumbnail con Sharp (con compresión WebP/JPEG optimizada)
       let thumbName = `tn_${baseFileName}.jpg`;
+      let thumbBuffer: Buffer;
       try {
         const metadata = await sharp(buffer, { failOn: 'none' }).metadata();
         const origW = metadata.width || 800;
@@ -56,20 +52,22 @@ export async function uploadMultipleImagesAndThumbnails(
         const targetW = Math.max(1, Math.round(origW * 0.25));
         const targetH = Math.max(1, Math.round(origH * 0.25));
 
-        const thumbBuffer = await sharp(buffer, { failOn: 'none' })
-          .rotate() // Respeta orientación EXIF
+        thumbBuffer = await sharp(buffer, { failOn: 'none' })
+          .rotate()
           .resize(targetW, targetH, { fit: 'inside' })
-          .jpeg({ quality: 80 })
+          .jpeg({ quality: 75, progressive: true })
           .toBuffer();
-
-        const thumbStream = Readable.from(thumbBuffer);
-        await client.uploadFrom(thumbStream, thumbName);
       } catch (sharpErr) {
         console.warn(`[Sharp] Advertencia al procesar thumbnail para ${baseFileName}:`, sharpErr);
-        // Fallback: si falla por metadatos HEIF/EXIF corruptos, subimos el buffer original como thumbnail
-        const fallbackStream = Readable.from(buffer);
-        await client.uploadFrom(fallbackStream, thumbName);
+        thumbBuffer = buffer;
       }
+
+      // 1. Subir original
+      const origName = `${baseFileName}.jpg`;
+      await client.uploadFrom(Readable.from(buffer), origName);
+
+      // 2. Subir thumbnail
+      await client.uploadFrom(Readable.from(thumbBuffer), thumbName);
 
       results.push({
         originalUrl: `${HTTP_BASE}/${safeSlug}/${origName}`,
