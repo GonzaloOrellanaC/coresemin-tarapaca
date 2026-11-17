@@ -47,21 +47,29 @@ export async function uploadMultipleImagesAndThumbnails(
       const origStream = Readable.from(buffer);
       await client.uploadFrom(origStream, origName);
 
-      // 2. Generar versión thumbnail al 25% de sus dimensiones con Sharp
-      const metadata = await sharp(buffer).metadata();
-      const origW = metadata.width || 800;
-      const origH = metadata.height || 600;
-      const targetW = Math.max(1, Math.round(origW * 0.25));
-      const targetH = Math.max(1, Math.round(origH * 0.25));
+      // 2. Generar versión thumbnail al 25% de sus dimensiones con Sharp (con tolerancia a fallos/metadatos corruptos)
+      let thumbName = `tn_${baseFileName}.jpg`;
+      try {
+        const metadata = await sharp(buffer, { failOn: 'none' }).metadata();
+        const origW = metadata.width || 800;
+        const origH = metadata.height || 600;
+        const targetW = Math.max(1, Math.round(origW * 0.25));
+        const targetH = Math.max(1, Math.round(origH * 0.25));
 
-      const thumbBuffer = await sharp(buffer)
-        .resize(targetW, targetH, { fit: 'inside' })
-        .jpeg({ quality: 80 })
-        .toBuffer();
+        const thumbBuffer = await sharp(buffer, { failOn: 'none' })
+          .rotate() // Respeta orientación EXIF
+          .resize(targetW, targetH, { fit: 'inside' })
+          .jpeg({ quality: 80 })
+          .toBuffer();
 
-      const thumbName = `tn_${baseFileName}.jpg`;
-      const thumbStream = Readable.from(thumbBuffer);
-      await client.uploadFrom(thumbStream, thumbName);
+        const thumbStream = Readable.from(thumbBuffer);
+        await client.uploadFrom(thumbStream, thumbName);
+      } catch (sharpErr) {
+        console.warn(`[Sharp] Advertencia al procesar thumbnail para ${baseFileName}:`, sharpErr);
+        // Fallback: si falla por metadatos HEIF/EXIF corruptos, subimos el buffer original como thumbnail
+        const fallbackStream = Readable.from(buffer);
+        await client.uploadFrom(fallbackStream, thumbName);
+      }
 
       results.push({
         originalUrl: `${HTTP_BASE}/${safeSlug}/${origName}`,
