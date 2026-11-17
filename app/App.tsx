@@ -29,58 +29,67 @@ const ScrollToTop = () => {
   return null;
 };
 
+const AppContent: React.FC = () => {
+  const { pathname } = useLocation();
+  const isAdminPath = pathname.startsWith('/admin');
+
+  return (
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/nosotros" element={<About />} />
+          <Route path="/noticias" element={<NewsList />} />
+          <Route path="/noticia/:slug" element={<NewsDetail />} />
+          <Route path="/eventos" element={<Events />} />
+          <Route path="/presencia-regional" element={<PresenciaRegional />} />
+          <Route path="/blogs" element={<Blogs />} />
+          <Route path="/actividad-minera" element={<MiningActivitiesList />} />
+          <Route path="/contacto" element={<Contact />} />
+          <Route path="/admin" element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/mining-activities" element={
+            <ProtectedRoute>
+              <AdminMiningActivities />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/mining-activities/create" element={
+            <ProtectedRoute>
+              <AdminMiningActivityForm />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/mining-activities/edit/:id" element={
+            <ProtectedRoute>
+              <AdminMiningActivityForm />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/create" element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/edit/:slug" element={
+            <ProtectedRoute>
+              <AdminEdit />
+            </ProtectedRoute>
+          } />
+          <Route path="/login" element={<Login />} />
+        </Routes>
+      </main>
+      {!isAdminPath && <Footer />}
+    </div>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <Router>
       <ScrollToTop />
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/nosotros" element={<About />} />
-            <Route path="/noticias" element={<NewsList />} />
-            <Route path="/noticia/:slug" element={<NewsDetail />} />
-            <Route path="/eventos" element={<Events />} />
-            <Route path="/presencia-regional" element={<PresenciaRegional />} />
-            <Route path="/blogs" element={<Blogs />} />
-            <Route path="/actividad-minera" element={<MiningActivitiesList />} />
-            <Route path="/contacto" element={<Contact />} />
-            <Route path="/admin" element={
-              <ProtectedRoute>
-                <AdminDashboard />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/mining-activities" element={
-              <ProtectedRoute>
-                <AdminMiningActivities />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/mining-activities/create" element={
-              <ProtectedRoute>
-                <AdminMiningActivityForm />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/mining-activities/edit/:id" element={
-              <ProtectedRoute>
-                <AdminMiningActivityForm />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/create" element={
-              <ProtectedRoute>
-                <Admin />
-              </ProtectedRoute>
-            } />
-            <Route path="/admin/edit/:slug" element={
-              <ProtectedRoute>
-                <AdminEdit />
-              </ProtectedRoute>
-            } />
-            <Route path="/login" element={<Login />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div> 
+      <AppContent />
     </Router>
   );
 };

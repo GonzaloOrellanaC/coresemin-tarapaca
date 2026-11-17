@@ -21,8 +21,17 @@ export const getArticleBySlug = async (slug: string): Promise<Article | null> =>
   }
 };
 
-export const saveArticle = async (article: Article, token?: string, blockFiles?: {[key: string]: File}): Promise<Article> => {
-  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+export const saveArticle = async (
+  article: Article, 
+  token?: string, 
+  blockFiles?: {[key: string]: File},
+  uploadSessionId?: string,
+  onUploadProgress?: (progressEvent: any) => void
+): Promise<Article> => {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (uploadSessionId) headers['x-upload-session-id'] = uploadSessionId;
+
   const form = new FormData();
   form.append('title', article.title);
   form.append('subtitle', article.subtitle || '');
@@ -44,12 +53,25 @@ export const saveArticle = async (article: Article, token?: string, blockFiles?:
     });
   }
 
-  const res = await api.post('/news', form, { headers });
+  const res = await api.post('/news', form, { 
+    headers,
+    onUploadProgress
+  });
   return res.data;
 };
 
-export const updateArticle = async (id: string, article: Article, token?: string, blockFiles?: {[key: string]: File}): Promise<Article> => {
-  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+export const updateArticle = async (
+  id: string, 
+  article: Article, 
+  token?: string, 
+  blockFiles?: {[key: string]: File},
+  uploadSessionId?: string,
+  onUploadProgress?: (progressEvent: any) => void
+): Promise<Article> => {
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  if (uploadSessionId) headers['x-upload-session-id'] = uploadSessionId;
+
   const form = new FormData();
   form.append('title', article.title);
   form.append('subtitle', article.subtitle || '');
@@ -81,7 +103,10 @@ export const updateArticle = async (id: string, article: Article, token?: string
     });
   }
 
-  const res = await api.put(`/news/${id}`, form, { headers });
+  const res = await api.put(`/news/${id}`, form, { 
+    headers,
+    onUploadProgress
+  });
   return res.data;
 };
 
@@ -140,4 +165,4 @@ export const updateMiningActivity = async (id: string, item: Partial<MiningActiv
 export const deleteMiningActivity = async (id: string, token?: string): Promise<void> => {
   const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
   await api.delete(`/mining-activities/${id}`, { headers });
-};
+};

@@ -12,6 +12,7 @@ import Toolbar from '@mui/material/Toolbar'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import CloseIcon from '@mui/icons-material/Close'
+import DownloadIcon from '@mui/icons-material/Download'
 
 type Props = {
   images: string[]
@@ -23,6 +24,32 @@ export default function GallerySwiper({ images, initialIndex = 0, onClose }: Pro
   const [thumbs, setThumbs] = useState<any>(null)
   const [activeIndex, setActiveIndex] = useState<number>(initialIndex)
   const [slidesPerView, setSlidesPerView] = useState<number>(7)
+
+  // Obtiene la URL de la imagen original (quitando el prefijo tn_ del nombre de archivo si existe)
+  const getOriginalUrl = (url: string) => {
+    return url.replace(/\/tn_([^/]+)$/, '/$1')
+  }
+
+  const handleDownloadCurrent = async () => {
+    const currentSrc = images[activeIndex]
+    if (!currentSrc) return
+    const originalUrl = getOriginalUrl(currentSrc)
+    try {
+      const response = await fetch(originalUrl)
+      const blob = await response.blob()
+      const blobUrl = window.URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobUrl
+      const filename = originalUrl.split('/').pop() || 'imagen.jpg'
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      window.URL.revokeObjectURL(blobUrl)
+    } catch {
+      window.open(originalUrl, '_blank')
+    }
+  }
 
   const handleMouseDown = (e: React.MouseEvent) => {
     // Prevent text selection on double-click (detail > 1)
@@ -60,7 +87,19 @@ export default function GallerySwiper({ images, initialIndex = 0, onClose }: Pro
     <Dialog fullScreen open onClose={onClose} PaperProps={{ style: { background: 'rgba(0,0,0,0.85)' } }}>
       <AppBar position="static" color="transparent" elevation={0} sx={{ userSelect: 'none' }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flex: 1 }} />
+          <Typography variant="h6" sx={{ flex: 1, color: '#fff' }}>
+            {activeIndex + 1} / {images.length}
+          </Typography>
+          <IconButton 
+            edge="end" 
+            color="inherit" 
+            onClick={handleDownloadCurrent} 
+            aria-label="descargar foto original"
+            title="Descargar foto original"
+            sx={{ color: '#fff', mr: 1, '&:hover': { color: '#4ade80' } }}
+          >
+            <DownloadIcon />
+          </IconButton>
           <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
             <CloseIcon sx={{ color: '#fff' }} />
           </IconButton>
