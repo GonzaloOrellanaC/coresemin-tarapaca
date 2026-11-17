@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { io, Socket } from 'socket.io-client';
 import { saveArticle } from '../services/dataService';
 import { Article, ContentBlock } from '../types';
 import { Icons } from '../components/Icons';
+import { RichTextEditor } from '../components/RichTextEditor';
 import { CORE_COLOR } from '../constants';
 
 const Admin: React.FC = () => {
@@ -29,7 +30,20 @@ const Admin: React.FC = () => {
   const [gallery, setGallery] = useState<File[]>([]);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Estados para barra de progreso y socket
+  // Memoizar URLs de vista previa para evitar re-creación constante y memory leaks
+  const galleryPreviews = useMemo(() => {
+    return gallery.map(file => ({
+      file,
+      url: URL.createObjectURL(file)
+    }));
+  }, [gallery]);
+
+  // Limpiar object URLs cuando cambia la lista
+  useEffect(() => {
+    return () => {
+      galleryPreviews.forEach(item => URL.revokeObjectURL(item.url));
+    };
+  }, [galleryPreviews]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadPercent, setUploadPercent] = useState(0);
   const [uploadStatus, setUploadStatus] = useState('');
@@ -361,13 +375,19 @@ const Admin: React.FC = () => {
                                                 Este bloque se verá como un botón destacado en la noticia.
                                             </div>
                                         </div>
-                                    ) : (
-                                        <textarea
+                                    ) : block.type === 'heading' ? (
+                                        <input
+                                            type="text"
                                             value={block.content}
                                             onChange={(e) => updateBlock(block.id, e.target.value)}
-                                            className={`w-full p-2 border-none focus:ring-0 resize-none bg-transparent ${block.type === 'heading' ? 'font-bold text-xl' : 'text-gray-600'}`}
-                                            placeholder={block.type === 'heading' ? 'Escribe un subtítulo...' : 'Escribe el párrafo aquí...'}
-                                            rows={block.type === 'heading' ? 1 : 3}
+                                            className="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-green-500 font-bold text-xl outline-none"
+                                            placeholder="Escribe un subtítulo..."
+                                        />
+                                    ) : (
+                                        <RichTextEditor
+                                            value={block.content}
+                                            onChange={(val) => updateBlock(block.id, val)}
+                                            placeholder="Escribe el párrafo aquí (puedes aplicar negrita, cursiva o pegar texto formateado)..."
                                         />
                                     )}
                                 </div>
@@ -397,10 +417,11 @@ const Admin: React.FC = () => {
                     
                     {gallery.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                            {gallery.map((file, idx) => (
+                            {galleryPreviews.map((item, idx) => (
                                 <div key={idx} className="relative aspect-video rounded-lg overflow-hidden group border border-gray-200">
                                     <img 
-                                        src={URL.createObjectURL(file)} 
+                                        src={item.url} 
+                                        loading="lazy"
                                         className="w-full h-full object-cover" 
                                         alt={`Gallery ${idx}`}
                                     />

@@ -13,14 +13,16 @@ export interface UploadResult {
   thumbnailUrl: string;
 }
 
-export async function uploadImageAndThumbnail(
-  fileBuffer: Buffer,
+export async function uploadMultipleImagesAndThumbnails(
+  items: { buffer: Buffer; baseFileName: string }[],
   slug: string,
-  baseFileName: string
-): Promise<UploadResult> {
+  onItemProgress?: (index: number, total: number, fileName: string) => void
+): Promise<UploadResult[]> {
   const safeSlug = slug.replace(/[^a-zA-Z0-9_\-]/g, '_');
-  const client = new ftp.Client();
+  const client = new ftp.Client(60000);
   client.ftp.verbose = false;
+
+  const results: UploadResult[] = [];
 
   try {
     await client.access({
@@ -34,34 +36,52 @@ export async function uploadImageAndThumbnail(
     const targetDir = `news/${safeSlug}`;
     await client.ensureDir(targetDir);
 
-    // 1. Subir original
-    const origName = `${baseFileName}.jpg`;
-    const origStream = Readable.from(fileBuffer);
-    await client.uploadFrom(origStream, origName);
+    for (let i = 0; i < items.length; i++) {
+      const { buffer, baseFileName } = items[i];
+      if (onItemProgress) {
+        onItemProgress(i + 1, items.length, baseFileName);
+      }
 
-    // 2. Generar versión thumbnail al 25% de sus dimensiones con Sharp
-    const metadata = await sharp(fileBuffer).metadata();
-    const origW = metadata.width || 800;
-    const origH = metadata.height || 600;
-    const targetW = Math.max(1, Math.round(origW * 0.25));
-    const targetH = Math.max(1, Math.round(origH * 0.25));
+      // 1. Subir original
+      const origName = `${baseFileName}.jpg`;
+      const origStream = Readable.from(buffer);
+      await client.uploadFrom(origStream, origName);
 
-    const thumbBuffer = await sharp(fileBuffer)
-      .resize(targetW, targetH, { fit: 'inside' })
-      .jpeg({ quality: 80 })
-      .toBuffer();
+      // 2. Generar versión thumbnail al 25% de sus dimensiones con Sharp
+      const metadata = await sharp(buffer).metadata();
+      const origW = metadata.width || 800;
+      const origH = metadata.height || 600;
+      const targetW = Math.max(1, Math.round(origW * 0.25));
+      const targetH = Math.max(1, Math.round(origH * 0.25));
 
-    const thumbName = `tn_${baseFileName}.jpg`;
-    const thumbStream = Readable.from(thumbBuffer);
-    await client.uploadFrom(thumbStream, thumbName);
+      const thumbBuffer = await sharp(buffer)
+        .resize(targetW, targetH, { fit: 'inside' })
+        .jpeg({ quality: 80 })
+        .toBuffer();
 
-    return {
-      originalUrl: `${HTTP_BASE}/${safeSlug}/${origName}`,
-      thumbnailUrl: `${HTTP_BASE}/${safeSlug}/${thumbName}`
-    };
+      const thumbName = `tn_${baseFileName}.jpg`;
+      const thumbStream = Readable.from(thumbBuffer);
+      await client.uploadFrom(thumbStream, thumbName);
+
+      results.push({
+        originalUrl: `${HTTP_BASE}/${safeSlug}/${origName}`,
+        thumbnailUrl: `${HTTP_BASE}/${safeSlug}/${thumbName}`
+      });
+    }
+
+    return results;
   } finally {
     client.close();
   }
+}
+
+export async function uploadImageAndThumbnail(
+  fileBuffer: Buffer,
+  slug: string,
+  baseFileName: string
+): Promise<UploadResult> {
+  const [res] = await uploadMultipleImagesAndThumbnails([{ buffer: fileBuffer, baseFileName }], slug);
+  return res;
 }
 
 export async function deleteNewsFtpDirectory(slug: string): Promise<void> {

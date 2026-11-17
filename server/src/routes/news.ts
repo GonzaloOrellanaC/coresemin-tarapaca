@@ -3,7 +3,7 @@ import multer from 'multer';
 import { authenticate } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
 import { News } from '../models/News';
-import { uploadImageAndThumbnail, deleteNewsFtpDirectory } from '../services/ftpStorage';
+import { uploadImageAndThumbnail, uploadMultipleImagesAndThumbnails, deleteNewsFtpDirectory } from '../services/ftpStorage';
 
 const router = Router();
 
@@ -57,38 +57,78 @@ router.post('/', authenticate, upload.any(), async (req, res) => {
   try {
     emitProgress('Iniciando procesamiento de archivos...', 5);
 
-    // 1. Portada
-    let coverImage = data.coverImage || '';
+    // Preparar lista unificada de archivos a subir
+    const uploadTasks: { buffer: Buffer; baseFileName: string; originalname: string; type: 'cover' | 'gallery' | 'block'; blockId?: string }[] = [];
+
     if (coverImageFile) {
-      emitProgress('Subiendo portada y generando versión thumbnail...', 15, coverImageFile.originalname);
-      const resImg = await uploadImageAndThumbnail(coverImageFile.buffer, slug, 'cover');
-      coverImage = resImg.thumbnailUrl; // Guardar URL del thumbnail (al 25%)
+      uploadTasks.push({
+        buffer: coverImageFile.buffer,
+        baseFileName: 'cover',
+        originalname: coverImageFile.originalname,
+        type: 'cover'
+      });
     }
 
-    // 2. Galería
-    const gallery: string[] = [];
-    let gIdx = 0;
-    for (const f of galleryFiles) {
-      gIdx++;
-      const currentPct = 20 + Math.round((gIdx / (galleryFiles.length || 1)) * 60);
-      emitProgress(`Subiendo galería (${gIdx}/${galleryFiles.length}): ${f.originalname}...`, currentPct, f.originalname);
-      const resImg = await uploadImageAndThumbnail(f.buffer, slug, `gallery_${gIdx}`);
-      gallery.push(resImg.thumbnailUrl);
-    }
+    galleryFiles.forEach((f, idx) => {
+      uploadTasks.push({
+        buffer: f.buffer,
+        baseFileName: `gallery_${idx + 1}`,
+        originalname: f.originalname,
+        type: 'gallery'
+      });
+    });
 
-    // 3. Bloques con imagen
     let blocks = data.blocks ? JSON.parse(data.blocks) : [];
-    blocks = await Promise.all(blocks.map(async (block: any, bIdx: number) => {
+    blocks.forEach((block: any, bIdx: number) => {
       if (block.type === 'image') {
         const file = files.find(f => f.fieldname === `block_image_${block.id}`);
         if (file) {
-          emitProgress(`Procesando imagen de bloque...`, 85, file.originalname);
-          const resImg = await uploadImageAndThumbnail(file.buffer, slug, `block_${bIdx + 1}`);
-          return { ...block, content: resImg.thumbnailUrl };
+          uploadTasks.push({
+            buffer: file.buffer,
+            baseFileName: `block_${bIdx + 1}`,
+            originalname: file.originalname,
+            type: 'block',
+            blockId: block.id
+          });
         }
       }
+    });
+
+    let coverImage = data.coverImage || '';
+    const gallery: string[] = [];
+    const blockImgMap: Record<string, string> = {};
+
+    if (uploadTasks.length > 0) {
+      const results = await uploadMultipleImagesAndThumbnails(
+        uploadTasks.map(t => ({ buffer: t.buffer, baseFileName: t.baseFileName })),
+        slug,
+        (current, total, baseFileName) => {
+          const task = uploadTasks[current - 1];
+          const pct = 10 + Math.round((current / total) * 75);
+          emitProgress(`Procesando (${current}/${total}): ${task.originalname}...`, pct, task.originalname);
+        }
+      );
+
+      // Asignar URLs resultantes
+      uploadTasks.forEach((t, i) => {
+        const res = results[i];
+        if (t.type === 'cover') {
+          coverImage = res.thumbnailUrl;
+        } else if (t.type === 'gallery') {
+          gallery.push(res.thumbnailUrl);
+        } else if (t.type === 'block' && t.blockId) {
+          blockImgMap[t.blockId] = res.thumbnailUrl;
+        }
+      });
+    }
+
+    // Actualizar bloques con las nuevas URLs
+    blocks = blocks.map((block: any) => {
+      if (block.type === 'image' && blockImgMap[block.id]) {
+        return { ...block, content: blockImgMap[block.id] };
+      }
       return block;
-    }));
+    });
 
     emitProgress('Guardando noticia en base de datos...', 90);
 
@@ -154,39 +194,87 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
   try {
     emitProgress('Procesando cambios...', 10);
 
+    const uploadTasks: { buffer: Buffer; baseFileName: string; originalname: string; type: 'cover' | 'gallery' | 'block'; blockId?: string }[] = [];
+
     // Portada: si viene un archivo nuevo se sube al storage FTP
     if (coverImageFile) {
-      emitProgress('Subiendo nueva portada...', 30, coverImageFile.originalname);
-      const resImg = await uploadImageAndThumbnail(coverImageFile.buffer, slug, 'cover');
-      item.coverImage = resImg.thumbnailUrl;
+      uploadTasks.push({
+        buffer: coverImageFile.buffer,
+        baseFileName: 'cover',
+        originalname: coverImageFile.originalname,
+        type: 'cover'
+      });
     } else if (data.coverImageUrl) {
       item.coverImage = data.coverImageUrl;
     }
 
     // Galería: conserva las existentes y sube las nuevas al hosting
     let currentGallery = data.existingGallery ? JSON.parse(data.existingGallery) : (item.gallery || []);
-    const newGalleryPaths: string[] = [];
     let gIdx = currentGallery.length;
-    for (const f of galleryFiles) {
+    galleryFiles.forEach((f) => {
       gIdx++;
-      emitProgress(`Subiendo nueva foto (${gIdx}): ${f.originalname}...`, 50, f.originalname);
-      const resImg = await uploadImageAndThumbnail(f.buffer, slug, `gallery_${gIdx}`);
-      newGalleryPaths.push(resImg.thumbnailUrl);
-    }
-    item.gallery = [...currentGallery, ...newGalleryPaths];
+      uploadTasks.push({
+        buffer: f.buffer,
+        baseFileName: `gallery_${gIdx}`,
+        originalname: f.originalname,
+        type: 'gallery'
+      });
+    });
 
     // Bloques con imagen
     let blocks = data.blocks ? JSON.parse(data.blocks) : item.blocks;
-    blocks = await Promise.all(blocks.map(async (block: any, bIdx: number) => {
+    blocks.forEach((block: any, bIdx: number) => {
       if (block.type === 'image') {
         const file = files.find(f => f.fieldname === `block_image_${block.id}`);
         if (file) {
-          const resImg = await uploadImageAndThumbnail(file.buffer, slug, `block_${bIdx + 1}`);
-          return { ...block, content: resImg.thumbnailUrl };
+          uploadTasks.push({
+            buffer: file.buffer,
+            baseFileName: `block_${bIdx + 1}`,
+            originalname: file.originalname,
+            type: 'block',
+            blockId: block.id
+          });
         }
       }
-      return block;
-    }));
+    });
+
+    if (uploadTasks.length > 0) {
+      const results = await uploadMultipleImagesAndThumbnails(
+        uploadTasks.map(t => ({ buffer: t.buffer, baseFileName: t.baseFileName })),
+        slug,
+        (current, total, baseFileName) => {
+          const task = uploadTasks[current - 1];
+          const pct = 15 + Math.round((current / total) * 75);
+          emitProgress(`Procesando (${current}/${total}): ${task.originalname}...`, pct, task.originalname);
+        }
+      );
+
+      const newGalleryPaths: string[] = [];
+      const blockImgMap: Record<string, string> = {};
+
+      uploadTasks.forEach((t, i) => {
+        const res = results[i];
+        if (t.type === 'cover') {
+          item.coverImage = res.thumbnailUrl;
+        } else if (t.type === 'gallery') {
+          newGalleryPaths.push(res.thumbnailUrl);
+        } else if (t.type === 'block' && t.blockId) {
+          blockImgMap[t.blockId] = res.thumbnailUrl;
+        }
+      });
+
+      if (newGalleryPaths.length > 0) {
+        item.gallery = [...currentGallery, ...newGalleryPaths];
+      }
+
+      blocks = blocks.map((block: any) => {
+        if (block.type === 'image' && blockImgMap[block.id]) {
+          return { ...block, content: blockImgMap[block.id] };
+        }
+        return block;
+      });
+    }
+
     item.blocks = blocks;
   } catch (err: any) {
     emitProgress(`Error: ${err?.message || err}`, 0);

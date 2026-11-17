@@ -5,7 +5,10 @@ const API_BASE = import.meta.env.VITE_SERVER_URL;
 
 console.log('API base URL:', API_BASE);
 
-const api = axios.create({ baseURL: API_BASE });
+const api = axios.create({ 
+  baseURL: API_BASE,
+  timeout: 300000 // 5 minutos de timeout para cargas con muchas imágenes
+});
 
 export const getArticles = async (): Promise<Article[]> => {
   const res = await api.get('/news');

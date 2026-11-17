@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { getArticleBySlug, updateArticle } from '../services/dataService';
 import { Article, ContentBlock } from '../types';
 import { Icons } from '../components/Icons';
+import { RichTextEditor } from '../components/RichTextEditor';
 import { CORE_COLOR } from '../constants';
 
 const AdminEdit: React.FC = () => {
@@ -327,13 +328,19 @@ const AdminEdit: React.FC = () => {
                                                 Este bloque se verá como un botón destacado en la noticia.
                                             </div>
                                         </div>
-                                    ) : (
-                                        <textarea
+                                    ) : block.type === 'heading' ? (
+                                        <input
+                                            type="text"
                                             value={block.content}
                                             onChange={(e) => updateBlock(block.id, e.target.value)}
-                                            className={`w-full p-2 border-none focus:ring-0 resize-none bg-transparent ${block.type === 'heading' ? 'font-bold text-xl' : 'text-gray-600'}`}
-                                            placeholder={block.type === 'heading' ? 'Escribe un subtítulo...' : 'Escribe el párrafo aquí...'}
-                                            rows={block.type === 'heading' ? 1 : 3}
+                                            className="w-full p-2 border border-gray-300 rounded focus:ring-1 focus:ring-green-500 font-bold text-xl outline-none"
+                                            placeholder="Escribe un subtítulo..."
+                                        />
+                                    ) : (
+                                        <RichTextEditor
+                                            value={block.content}
+                                            onChange={(val) => updateBlock(block.id, val)}
+                                            placeholder="Escribe el párrafo aquí (puedes aplicar negrita, cursiva o pegar texto formateado)..."
                                         />
                                     )}
                                 </div>
