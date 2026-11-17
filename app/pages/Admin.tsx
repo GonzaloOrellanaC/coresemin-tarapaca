@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { io, Socket } from 'socket.io-client';
 import { saveArticle } from '../services/dataService';
 import { Article, ContentBlock } from '../types';
 import { Icons } from '../components/Icons';
@@ -10,6 +11,7 @@ const Admin: React.FC = () => {
     const token = localStorage.getItem('auth_token');
     const apiBase = (import.meta as any).env.VITE_FRONTEND_URL || '';
     const base = apiBase.replace(/\/(?:api\/?)?$/i, '');
+    const serverUrl = ((import.meta as any).env.VITE_SERVER_URL || 'http://localhost:4000/api').replace(/\/api\/?$/, '');
 
     useEffect(() => {
         if (!token) {
@@ -26,6 +28,14 @@ const Admin: React.FC = () => {
   const [blockFiles, setBlockFiles] = useState<{[key: string]: File}>({});
   const [gallery, setGallery] = useState<File[]>([]);
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Estados para barra de progreso y socket
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadPercent, setUploadPercent] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [currentPreviewUrl, setCurrentPreviewUrl] = useState<string | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const sessionIdRef = useRef<string>('');
 
   // Simple UID generator
   const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -59,7 +69,39 @@ const Admin: React.FC = () => {
     setBlocks(newBlocks);
   };
 
-    const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    const s = io(serverUrl);
+    socketRef.current = s;
+    sessionIdRef.current = Math.random().toString(36).substring(2, 12);
+
+    s.on('connect', () => {
+      s.emit('joinSession', sessionIdRef.current);
+    });
+
+    s.on('newsUploadProgress', (data: { uploadSessionId?: string, status: string, percent: number, currentImage?: string }) => {
+      if (!data.uploadSessionId || data.uploadSessionId === sessionIdRef.current) {
+        setUploadStatus(data.status);
+        if (data.percent !== undefined) setUploadPercent(data.percent);
+        if (data.currentImage) {
+          // Buscar archivo local para mostrar su vista previa mientras se procesa
+          if (coverImage instanceof File && coverImage.name === data.currentImage) {
+            setCurrentPreviewUrl(URL.createObjectURL(coverImage));
+          } else {
+            const matchFile = gallery.find(f => f.name === data.currentImage);
+            if (matchFile) {
+              setCurrentPreviewUrl(URL.createObjectURL(matchFile));
+            }
+          }
+        }
+      }
+    });
+
+    return () => {
+      s.disconnect();
+    };
+  }, [serverUrl, coverImage, gallery]);
+
+  const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !subtitle) return;
 
@@ -78,14 +120,36 @@ const Admin: React.FC = () => {
 
         (async () => {
             try {
-                await saveArticle(newArticle, token || undefined, blockFiles);
-                setSuccessMsg('Noticia publicada exitosamente!');
+                setIsUploading(true);
+                setUploadPercent(5);
+                setUploadStatus('Preparando envío...');
+                if (coverImage instanceof File) {
+                  setCurrentPreviewUrl(URL.createObjectURL(coverImage));
+                }
+
+                await saveArticle(
+                  newArticle, 
+                  token || undefined, 
+                  blockFiles, 
+                  sessionIdRef.current,
+                  (progressEvent) => {
+                    if (progressEvent.total) {
+                      const clientPct = Math.round((progressEvent.loaded * 30) / progressEvent.total);
+                      setUploadPercent(prev => Math.max(prev, clientPct));
+                      setUploadStatus(`Enviando archivos al servidor (${Math.round((progressEvent.loaded / progressEvent.total) * 100)}%)...`);
+                    }
+                  }
+                );
+                
+                setSuccessMsg('¡Noticia publicada exitosamente!');
                 setTimeout(() => {
                     setSuccessMsg('');
                     navigate('/admin');
                 }, 2000);
-            } catch (err) {
-                setSuccessMsg('Error al publicar. Revisa permisos.');
+            } catch (err: any) {
+                setSuccessMsg(`Error al publicar: ${err?.response?.data?.message || err?.message || 'Revisa permisos'}`);
+            } finally {
+                setIsUploading(false);
             }
         })();
     };
@@ -358,10 +422,52 @@ const Admin: React.FC = () => {
                     )}
                 </div>
 
+                {/* Feedback de carga con Barra de Avance, Vista Previa de imagen y Socket */}
+                {isUploading && (
+                    <div className="bg-gradient-to-r from-gray-900 to-gray-800 text-white p-6 rounded-2xl shadow-xl border border-gray-700 space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Icons.Loader2 className="w-6 h-6 text-green-400 animate-spin" />
+                                <div>
+                                    <h4 className="font-bold text-base text-white">Publicando noticia en el servidor</h4>
+                                    <p className="text-sm text-gray-300">{uploadStatus || 'Procesando imágenes...'}</p>
+                                </div>
+                            </div>
+                            <span className="text-xl font-extrabold text-green-400">{uploadPercent}%</span>
+                        </div>
+
+                        {/* Barra de progreso */}
+                        <div className="w-full bg-gray-700 rounded-full h-3.5 overflow-hidden p-0.5 border border-gray-600">
+                            <div 
+                                className="bg-gradient-to-r from-green-500 to-emerald-400 h-full rounded-full transition-all duration-300 ease-out shadow-sm"
+                                style={{ width: `${Math.max(5, Math.min(100, uploadPercent))}%` }}
+                            />
+                        </div>
+
+                        {/* Vista previa de la imagen que se está cargando */}
+                        {currentPreviewUrl && (
+                            <div className="flex items-center gap-4 bg-gray-800/80 p-3 rounded-xl border border-gray-700/60 mt-3">
+                                <div className="w-16 h-16 rounded-lg overflow-hidden shrink-0 border border-gray-600 shadow-md">
+                                    <img 
+                                        src={currentPreviewUrl} 
+                                        alt="Cargando imagen" 
+                                        className="w-full h-full object-cover" 
+                                    />
+                                </div>
+                                <div className="text-xs text-gray-300">
+                                    <p className="font-semibold text-white">Imagen en proceso de carga</p>
+                                    <p className="text-gray-400 mt-0.5">Se está subiendo al servidor FTP y generando el thumbnail al 25%</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="flex justify-end pt-4">
                     <button 
                         type="submit" 
-                        className="flex items-center gap-2 px-8 py-3 rounded-lg text-white font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all"
+                        disabled={isUploading}
+                        className={`flex items-center gap-2 px-8 py-3 rounded-lg text-white font-bold shadow-lg hover:shadow-xl transform transition-all ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-0.5'}`}
                         style={{ backgroundColor: CORE_COLOR }}
                     >
                         <Icons.Save className="w-5 h-5" /> Publicar Noticia

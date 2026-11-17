@@ -1,6 +1,7 @@
 .env
+.FTP.env
 node_modules
 archive-*
 public/images/
 dist/
-app/dist/
+app/dist/
