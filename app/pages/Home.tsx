@@ -5,6 +5,7 @@ import EventCard from '../components/EventCard';
 import { getArticles, getEvents, getMiningActivities } from '../services/dataService';
 import { Article, EventItem, MiningActivityItem } from '../types';
 import { CORE_COLOR } from '../constants';
+import { formatDate } from '../utils/dateUtils';
 
 const Home: React.FC = () => {
   const [latestNews, setLatestNews] = useState<Article[]>([]);
@@ -287,7 +288,7 @@ const Home: React.FC = () => {
                               <div>
                                   <h4 className="font-bold text-gray-900 leading-tight group-hover:text-green-700 transition-colors line-clamp-2">{post.title}</h4>
                                   <p className="text-xs text-gray-500 mt-1 line-clamp-2">{post.subtitle}</p>
-                                  <span className="text-[10px] text-gray-400 mt-2 block font-medium uppercase">{new Date(post.publishDate).toLocaleDateString('es-CL')}</span>
+                                  <span className="text-[10px] text-gray-400 mt-2 block font-medium uppercase">{formatDate(post.publishDate, { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                               </div>
                           </Link>
                       ))}
@@ -615,7 +616,7 @@ const Home: React.FC = () => {
                   <div className="p-5 sm:p-6">
                     <div className="flex items-center text-xs font-semibold text-gray-400 mb-2.5 gap-2">
                       <Icons.Calendar className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{new Date(item.publishDate).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                      <span>{formatDate(item.publishDate)}</span>
                       {item.authorName && (
                         <>
                           <span>•</span>

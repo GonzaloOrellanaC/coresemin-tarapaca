@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Article } from '../types';
 import { Icons } from './Icons';
 import { CORE_COLOR } from '../constants';
+import { formatDate } from '../utils/dateUtils';
 
 interface NewsCardProps {
   article: Article;
@@ -36,7 +37,7 @@ const NewsCard: React.FC<NewsCardProps> = ({ article, featured = false }) => {
         <div>
           <div className="flex items-center text-xs text-gray-400 mb-3 space-x-2">
             <Icons.Calendar className="w-3 h-3" />
-            <span>{new Date(article.publishDate).toLocaleDateString('es-CL', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <span>{formatDate(article.publishDate)}</span>
           </div>
           <Link to={`/noticia/${article.slug}`}>
             <h3 className={`font-bold text-gray-800 mb-2 group-hover:text-[${CORE_COLOR}] transition-colors ${featured ? 'text-2xl' : 'text-lg line-clamp-2'}`}>

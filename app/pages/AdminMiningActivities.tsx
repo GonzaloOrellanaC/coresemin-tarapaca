@@ -7,6 +7,7 @@ import {
 import { MiningActivityItem } from '../types';
 import { Icons } from '../components/Icons';
 import { CORE_COLOR } from '../constants';
+import { formatDate } from '../utils/dateUtils';
 
 const AdminMiningActivities: React.FC = () => {
   const [activities, setActivities] = useState<MiningActivityItem[]>([]);
@@ -165,7 +166,7 @@ const AdminMiningActivities: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-500 text-sm whitespace-nowrap">
-                        {new Date(item.publishDate).toLocaleDateString('es-CL')}
+                        {formatDate(item.publishDate, { day: '2-digit', month: '2-digit', year: 'numeric' })}
                       </td>
                       <td className="px-6 py-4 text-right whitespace-nowrap">
                         <div className="flex justify-end gap-2">

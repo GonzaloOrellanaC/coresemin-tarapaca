@@ -4,6 +4,7 @@ import { getPaginatedMiningActivities } from '../services/dataService';
 import { MiningActivityItem } from '../types';
 import { Icons } from '../components/Icons';
 import { CORE_COLOR } from '../constants';
+import { formatDate } from '../utils/dateUtils';
 
 const MiningActivitiesList: React.FC = () => {
   const [activities, setActivities] = useState<MiningActivityItem[]>([]);
@@ -120,11 +121,7 @@ const MiningActivitiesList: React.FC = () => {
                       <div className="flex items-center text-xs font-semibold text-gray-400 mb-2.5 gap-2 flex-wrap">
                         <span className="flex items-center gap-1 text-emerald-600">
                           <Icons.Calendar className="w-3.5 h-3.5" />
-                          {new Date(item.publishDate).toLocaleDateString('es-CL', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
+                          {formatDate(item.publishDate)}
                         </span>
                         {item.authorName && (
                           <>

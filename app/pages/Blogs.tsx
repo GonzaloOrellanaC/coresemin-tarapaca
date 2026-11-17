@@ -3,6 +3,7 @@ import { CORE_COLOR } from '../constants';
 import React, { useEffect, useState } from 'react';
 import { Article } from '../types';
 import { getArticles } from '../services/dataService';
+import { formatDate } from '../utils/dateUtils';
 
 const Blogs: React.FC = () => {
     const [blogs, setBlogs] = useState<Article[]>([]);
@@ -41,7 +42,7 @@ const Blogs: React.FC = () => {
                         </div>
                         <div className="p-6 md:p-8 flex flex-col justify-center flex-1">
                             <div className="flex items-center gap-2 text-xs text-gray-400 mb-3 uppercase font-bold tracking-wide">
-                                <Icons.Calendar className="w-3 h-3" /> {new Date(blog.publishDate).toLocaleDateString('es-CL')}
+                                <Icons.Calendar className="w-3 h-3" /> {formatDate(blog.publishDate)}
                                 <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                                 <span className="text-green-600">{blog.author}</span>
                             </div>

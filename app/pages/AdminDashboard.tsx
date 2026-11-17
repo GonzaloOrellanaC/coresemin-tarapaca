@@ -4,6 +4,7 @@ import { getArticles, deleteArticle } from '../services/dataService';
 import { Article } from '../types';
 import { Icons } from '../components/Icons';
 import { CORE_COLOR } from '../constants';
+import { formatDate } from '../utils/dateUtils';
 
 const AdminDashboard: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -122,7 +123,7 @@ const AdminDashboard: React.FC = () => {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-gray-500 text-sm">
-                                                {new Date(article.publishDate).toLocaleDateString()}
+                                                {formatDate(article.publishDate, { day: '2-digit', month: '2-digit', year: 'numeric' })}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex justify-end gap-2">

@@ -6,6 +6,7 @@ import { Icons } from '../components/Icons';
 import { CORE_COLOR } from '../constants';
 import DOMPurify from 'dompurify';
 import GallerySwiper from '../components/GallerySwiper';
+import { formatDate } from '../utils/dateUtils';
 
 const NewsDetail: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -132,7 +133,7 @@ const NewsDetail: React.FC = () => {
                 <span className="inline-block px-3 py-1 rounded bg-green-600 text-white text-xs font-bold uppercase tracking-wide mb-3">{article.category}</span>
                 <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight mb-4 shadow-sm">{article.title}</h1>
                  <div className="flex items-center text-gray-300 text-sm gap-4">
-                    <span className="flex items-center gap-1"><Icons.Calendar className="w-4 h-4"/> {new Date(article.publishDate).toLocaleDateString('es-CL')}</span>
+                    <span className="flex items-center gap-1"><Icons.Calendar className="w-4 h-4"/> {formatDate(article.publishDate)}</span>
                     <span className="flex items-center gap-1"><Icons.Users className="w-4 h-4"/> Por {article.author}</span>
                 </div>
             </div>
