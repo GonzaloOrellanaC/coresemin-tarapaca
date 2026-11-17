@@ -113,7 +113,8 @@ router.post('/', authenticate, upload.any(), async (req, res) => {
       uploadTasks.forEach((t, i) => {
         const res = results[i];
         if (t.type === 'cover') {
-          coverImage = res.thumbnailUrl;
+          // La portada debe ser de alta calidad (originalUrl)
+          coverImage = res.originalUrl;
         } else if (t.type === 'gallery') {
           gallery.push(res.thumbnailUrl);
         } else if (t.type === 'block' && t.blockId) {
@@ -255,7 +256,8 @@ router.put('/:id', authenticate, upload.any(), async (req, res) => {
       uploadTasks.forEach((t, i) => {
         const res = results[i];
         if (t.type === 'cover') {
-          item.coverImage = res.thumbnailUrl;
+          // La portada debe ser de alta calidad (originalUrl)
+          item.coverImage = res.originalUrl;
         } else if (t.type === 'gallery') {
           newGalleryPaths.push(res.thumbnailUrl);
         } else if (t.type === 'block' && t.blockId) {
