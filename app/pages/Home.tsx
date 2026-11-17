@@ -103,7 +103,8 @@ const Home: React.FC = () => {
         // Load initial data
         (async () => {
                 const news = await getArticles();
-                setLatestNews(news.slice(0, 3));
+                const sortedNews = [...news].sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime());
+                setLatestNews(sortedNews.slice(0, 3));
                 const ev = await getEvents();
                 // Mostrar sólo eventos cuya fecha (dateEvent) sea hoy o en el futuro
                 const todayStart = new Date();
@@ -400,157 +401,123 @@ const Home: React.FC = () => {
           </Link>
         </div>
 
-        {/* Grid de Noticias (7 columnas principal / 5 columnas secundarias) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-          
-          {/* Noticia 1 (Principal Destacada) */}
-          <article className="lg:col-span-7 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200/70 flex flex-col justify-between group hover:-translate-y-1">
-            <div>
-              {/* Contenedor de Imagen con Overlay y Badge */}
-              <div className="relative overflow-hidden aspect-[16/10] w-full bg-gray-100">
-                <img 
-                  alt="CORESEMIN Tarapacá dio inicio al Mes de la Minería 2026 con jornada sobre seguridad y recursos hídricos" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
-                  src="https://omcloudstorage.omtecnologia.cl/api/v1/public/files/local_1786648797532_d2y13m"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://placehold.co/800x500/111827/ffffff?text=CORESEMIN+Tarapacá';
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
-                
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="px-3 py-1 text-xs font-extrabold text-white uppercase rounded-full tracking-wider shadow-md bg-[#028938]">
-                    Destacado
-                  </span>
-                </div>
-              </div>
-
-              {/* Contenido Noticia Principal */}
-              <div className="p-6 md:p-8">
-                <div className="flex items-center text-xs font-semibold text-gray-400 mb-3 space-x-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
-                  <span>12 de agosto de 2026</span>
-                  <span>•</span>
-                  <span className="text-brand">Seguridad y Recursos Hídricos</span>
-                </div>
-
-                <Link to="/noticia/coresemin-tarapaca-dio-inicio-al-mes-de-la-mineria-2026-con-jornada-sobre-seguridad-y-recursos-hidricos" data-discover="true" className="block">
-                  <h3 className="font-extrabold text-gray-900 group-hover:text-brand transition-colors text-xl sm:text-2xl lg:text-[26px] leading-tight tracking-tight">
-                    CORESEMIN Tarapacá dio inicio al Mes de la Minería 2026 con jornada sobre seguridad y recursos hídricos
-                  </h3>
-                </Link>
-
-                <p className="text-gray-600 text-sm sm:text-base mt-3.5 line-clamp-3 leading-relaxed">
-                  El Consejo Regional de Seguridad Minera de Tarapacá (CORESEMIN) dio inicio a las actividades del Mes de la Minería 2026 con un desayuno que reunió a autoridades, representantes de empresas, instituciones públicas y privadas y colaboradores vinculados a la seguridad minera.
-                </p>
-              </div>
-            </div>
-
-            {/* Footer Card Noticia Principal */}
-            <div className="px-6 md:px-8 pb-6 pt-4 border-t border-gray-100 flex items-center justify-between">
-              <Link className="text-sm font-bold text-brand hover:text-brand-700 flex items-center gap-2 group-hover:gap-3 transition-all" to="/noticia/coresemin-tarapaca-dio-inicio-al-mes-de-la-mineria-2026-con-jornada-sobre-seguridad-y-recursos-hidricos" data-discover="true">
-                <span>Leer artículo completo</span>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-              </Link>
-              <span className="text-xs text-gray-400 font-medium">Lectura: 3 min</span>
-            </div>
-          </article>
-
-          {/* Columna Noticias Secundarias (5 columnas) */}
-          <div className="lg:col-span-5 flex flex-col gap-6">
-            
-            {/* Noticia 2: Concurso de Pintura */}
-            <article className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200/70 flex flex-col sm:flex-row h-full group hover:-translate-y-0.5">
-              <div className="relative overflow-hidden sm:w-2/5 aspect-[16/10] sm:aspect-auto shrink-0 bg-gray-100">
-                <img 
-                  alt="Concurso de Pintura CORESEMIN 2026" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
-                  src="https://omcloudstorage.omtecnologia.cl/api/v1/public/files/local_1786641718426_g4ylh"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://placehold.co/400x300/111827/ffffff?text=Concurso+Pintura';
-                  }}
-                />
-                <div className="absolute top-3 left-3">
-                  <span className="px-2.5 py-0.5 text-[10px] font-extrabold text-white uppercase rounded-full shadow-sm bg-[#028938]">
-                    Comunidad
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-5 sm:p-6 sm:w-3/5 flex flex-col justify-between flex-1">
+        {/* Grid de Noticias (7 columnas principal más grande / 5 columnas secundarias) */}
+        {latestNews.length > 0 ? (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            {/* Noticia 1 (Última noticia, Destacada y más grande) */}
+            {latestNews[0] && (
+              <article className="lg:col-span-7 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-200/70 flex flex-col justify-between group hover:-translate-y-1">
                 <div>
-                  <div className="flex items-center text-xs font-semibold text-gray-400 mb-2 space-x-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
-                    <span>2 de julio de 2026</span>
+                  <div className="relative overflow-hidden aspect-[16/10] w-full bg-gray-100">
+                    <img 
+                      alt={latestNews[0].title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                      src={latestNews[0].coverImage || latestNews[0].image || '/CORESEMIN-LOGO.png'}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/CORESEMIN-LOGO.png';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity"></div>
+                    
+                    <div className="absolute top-4 left-4 flex gap-2">
+                      <span className="px-3 py-1 text-xs font-extrabold text-white uppercase rounded-full tracking-wider shadow-md bg-[#028938]">
+                        {latestNews[0].category || 'Destacado'}
+                      </span>
+                    </div>
                   </div>
 
-                  <Link to="/noticia/ya-tenemos-a-los-premiados-del-concurso-de-pintura-coresemin-2026" data-discover="true">
-                    <h4 className="font-bold text-gray-900 group-hover:text-brand transition-colors text-base sm:text-lg line-clamp-2 leading-snug">
-                      ¡Ya tenemos a los premiados del Concurso de Pintura CORESEMIN 2026!
-                    </h4>
+                  <div className="p-6 md:p-8">
+                    <div className="flex items-center text-xs font-semibold text-gray-400 mb-3 space-x-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                      <span>{formatDate(latestNews[0].publishDate)}</span>
+                      {latestNews[0].author && (
+                        <>
+                          <span>•</span>
+                          <span className="text-brand">{latestNews[0].author}</span>
+                        </>
+                      )}
+                    </div>
+
+                    <Link to={`/noticia/${latestNews[0].slug}`} data-discover="true" className="block">
+                      <h3 className="font-extrabold text-gray-900 group-hover:text-brand transition-colors text-xl sm:text-2xl lg:text-[26px] leading-tight tracking-tight">
+                        {latestNews[0].title}
+                      </h3>
+                    </Link>
+
+                    {latestNews[0].subtitle && (
+                      <p className="text-gray-600 text-sm sm:text-base mt-3.5 line-clamp-3 leading-relaxed">
+                        {latestNews[0].subtitle}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="px-6 md:px-8 pb-6 pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <Link className="text-sm font-bold text-brand hover:text-brand-700 flex items-center gap-2 group-hover:gap-3 transition-all" to={`/noticia/${latestNews[0].slug}`} data-discover="true">
+                    <span>Leer artículo completo</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
                   </Link>
-
-                  <p className="text-gray-500 text-xs sm:text-sm mt-2 line-clamp-2 leading-relaxed">
-                    Con mucha alegría damos a conocer el listado oficial de premiados del certamen “Innovación y Tecnología así imagino la minería del mañana”.
-                  </p>
+                  <span className="text-xs text-gray-400 font-medium">Lectura: 3 min</span>
                 </div>
+              </article>
+            )}
 
-                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <Link className="text-xs sm:text-sm font-bold text-brand hover:text-brand-700 flex items-center gap-1.5 group-hover:gap-2 transition-all" to="/noticia/ya-tenemos-a-los-premiados-del-concurso-de-pintura-coresemin-2026" data-discover="true">
-                    <span>Leer noticia</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-                  </Link>
-                </div>
-              </div>
-            </article>
-
-            {/* Noticia 3: Cursos Monitores */}
-            <article className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200/70 flex flex-col sm:flex-row h-full group hover:-translate-y-0.5">
-              <div className="relative overflow-hidden sm:w-2/5 aspect-[16/10] sm:aspect-auto shrink-0 bg-gray-100">
-                <img 
-                  alt="Cursos Monitores en Seguridad Minera 2026" 
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
-                  src="https://omcloudstorage.omtecnologia.cl/api/v1/public/files/local_1786641707870_s4qjr7"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src = 'https://placehold.co/400x300/111827/ffffff?text=Cursos+Monitores';
-                  }}
-                />
-                <div className="absolute top-3 left-3">
-                  <span className="px-2.5 py-0.5 text-[10px] font-extrabold text-white uppercase rounded-full shadow-sm bg-[#028938]">
-                    Capacitación
-                  </span>
-                </div>
-              </div>
-
-              <div className="p-5 sm:p-6 sm:w-3/5 flex flex-col justify-between flex-1">
-                <div>
-                  <div className="flex items-center text-xs font-semibold text-gray-400 mb-2 space-x-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
-                    <span>10 de junio de 2026</span>
+            {/* Columna Noticias Secundarias (5 columnas) */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+              {latestNews.slice(1, 3).map((article) => (
+                <article key={article.id || article.slug} className="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-200/70 flex flex-col sm:flex-row h-full group hover:-translate-y-0.5">
+                  <div className="relative overflow-hidden sm:w-2/5 aspect-[16/10] sm:aspect-auto shrink-0 bg-gray-100">
+                    <img 
+                      alt={article.title} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out" 
+                      src={article.coverImage || article.image || '/CORESEMIN-LOGO.png'}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = '/CORESEMIN-LOGO.png';
+                      }}
+                    />
+                    <div className="absolute top-3 left-3">
+                      <span className="px-2.5 py-0.5 text-[10px] font-extrabold text-white uppercase rounded-full shadow-sm bg-[#028938]">
+                        {article.category || 'Noticia'}
+                      </span>
+                    </div>
                   </div>
 
-                  <Link to="/noticia/tarapaca-da-inicio-a-la-8-version-de-los-cursos-monitores-en-seguridad-minera-2026" data-discover="true">
-                    <h4 className="font-bold text-gray-900 group-hover:text-brand transition-colors text-base sm:text-lg line-clamp-2 leading-snug">
-                      Tarapacá da inicio a la 8ª versión de los Cursos Monitores 2026
-                    </h4>
-                  </Link>
+                  <div className="p-5 sm:p-6 sm:w-3/5 flex flex-col justify-between flex-1">
+                    <div>
+                      <div className="flex items-center text-xs font-semibold text-gray-400 mb-2 space-x-1.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line></svg>
+                        <span>{formatDate(article.publishDate)}</span>
+                      </div>
 
-                  <p className="text-gray-500 text-xs sm:text-sm mt-2 line-clamp-2 leading-relaxed">
-                    Iniciativa formativa impulsada junto a Sernageomin, Seremi de Minería y Seremi de Educación para trabajadores del sector.
-                  </p>
-                </div>
+                      <Link to={`/noticia/${article.slug}`} data-discover="true">
+                        <h4 className="font-bold text-gray-900 group-hover:text-brand transition-colors text-base sm:text-lg line-clamp-2 leading-snug">
+                          {article.title}
+                        </h4>
+                      </Link>
 
-                <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-                  <Link className="text-xs sm:text-sm font-bold text-brand hover:text-brand-700 flex items-center gap-1.5 group-hover:gap-2 transition-all" to="/noticia/tarapaca-da-inicio-a-la-8-version-de-los-cursos-monitores-en-seguridad-minera-2026" data-discover="true">
-                    <span>Leer noticia</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
-                  </Link>
-                </div>
-              </div>
-            </article>
+                      {article.subtitle && (
+                        <p className="text-gray-500 text-xs sm:text-sm mt-2 line-clamp-2 leading-relaxed">
+                          {article.subtitle}
+                        </p>
+                      )}
+                    </div>
 
+                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <Link className="text-xs sm:text-sm font-bold text-brand hover:text-brand-700 flex items-center gap-1.5 group-hover:gap-2 transition-all" to={`/noticia/${article.slug}`} data-discover="true">
+                        <span>Leer noticia</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="text-center py-12 text-gray-500 bg-white rounded-2xl border border-gray-100">
+            No hay actividades recientes para mostrar.
+          </div>
+        )}
       </section>
 
       {/* ========================================== */}
