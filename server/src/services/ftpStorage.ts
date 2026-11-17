@@ -63,3 +63,27 @@ export async function uploadImageAndThumbnail(
     client.close();
   }
 }
+
+export async function deleteNewsFtpDirectory(slug: string): Promise<void> {
+  const safeSlug = slug.replace(/[^a-zA-Z0-9_\-]/g, '_');
+  const client = new ftp.Client();
+  client.ftp.verbose = false;
+
+  try {
+    await client.access({
+      host: FTP_HOST,
+      user: FTP_USER,
+      password: FTP_PASS,
+      port: FTP_PORT,
+      secure: false
+    });
+
+    const targetDir = `news/${safeSlug}`;
+    // removeDir elimina el directorio de forma recursiva con todos sus archivos
+    await client.removeDir(targetDir);
+  } catch (err) {
+    console.warn(`[FTP] Advertencia al eliminar directorio ${safeSlug}:`, err);
+  } finally {
+    client.close();
+  }
+}

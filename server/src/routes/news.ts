@@ -3,7 +3,7 @@ import multer from 'multer';
 import { authenticate } from '../middleware/auth';
 import { slugify } from '../utils/slugify';
 import { News } from '../models/News';
-import { uploadImageAndThumbnail } from '../services/ftpStorage';
+import { uploadImageAndThumbnail, deleteNewsFtpDirectory } from '../services/ftpStorage';
 
 const router = Router();
 
@@ -208,6 +208,11 @@ router.delete('/:id', authenticate, async (req, res) => {
 
   const item = await News.findByIdAndDelete(id);
   if (!item) return res.status(404).json({ message: 'Not found' });
+
+  // Eliminar carpeta de fotos en el servidor FTP
+  if (item.slug) {
+    await deleteNewsFtpDirectory(item.slug);
+  }
 
   const io = req.app.get('io');
   if (io) io.emit('newsDeleted', { id });
